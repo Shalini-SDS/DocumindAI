@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FiBell, FiMoon, FiSettings, FiSun } from "react-icons/fi";
 
@@ -31,6 +31,22 @@ export default function DashboardLayout({
   userRole
 }: DashboardLayoutProps) {
   const location = useLocation();
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window === "undefined") return "dark";
+    const stored = window.localStorage.getItem("transparency-theme");
+    return stored === "light" ? "light" : "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("transparency-theme", theme);
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   return (
     <div className="dashboard-layout">
@@ -103,12 +119,9 @@ export default function DashboardLayout({
             <div className="dashboard-subtitle">{subtitle}</div>
           </div>
           <div className="topbar-right">
-            <div className="icon-button">
-              <FiSun />
-            </div>
-            <div className="icon-button">
-              <FiMoon />
-            </div>
+            <button className="icon-button" type="button" onClick={toggleTheme}>
+              {theme === "dark" ? <FiSun /> : <FiMoon />}
+            </button>
             <div className="icon-button">
               <FiBell />
             </div>

@@ -1,34 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import AIAssistantPage from './pages/AIAssistantPage'
+import SettingsPage from './pages/SettingsPage'
 
+function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      <div className="app-root">
+        <aside className="app-sidenav">
+          <div className="brand">AI Expense Transparency</div>
+          <nav>
+            <div className="nav-group">General</div>
+            <ul>
+              <li><Link to="/admin/ai">Admin - AI Assistant</Link></li>
+              <li><Link to="/admin/settings">Admin - Settings</Link></li>
+              <li><Link to="/auditor/ai">Auditor - AI Assistant</Link></li>
+              <li><Link to="/auditor/settings">Auditor - Settings</Link></li>
+              <li><Link to="/employee/ai">Employee - AI Assistant</Link></li>
+              <li><Link to="/employee/settings">Employee - Settings</Link></li>
+            </ul>
+          </nav>
+        </aside>
+
+        <main className="app-main">
+          <Routes>
+            <Route path="/admin/ai" element={<AIAssistantPage role="Admin" />} />
+            <Route path="/auditor/ai" element={<AIAssistantPage role="Auditor" />} />
+            <Route path="/employee/ai" element={<AIAssistantPage role="Employee" />} />
+
+            <Route path="/admin/settings" element={<SettingsPage role="Admin" />} />
+            <Route path="/auditor/settings" element={<SettingsPage role="Auditor" />} />
+            <Route path="/employee/settings" element={<SettingsPage role="Employee" />} />
+
+            <Route path="/" element={<div style={{padding:24}}>Open the side links to view the pages.</div>} />
+          </Routes>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </Router>
   )
 }
 

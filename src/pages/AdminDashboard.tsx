@@ -58,7 +58,7 @@ export default function AdminDashboard() {
         { label: "Dashboard Overview", icon: <FiGrid />, path: "/dashboard/admin" },
         { label: "Upload Receipt", icon: <FiUploadCloud /> },
         { label: "My Expenses", icon: <FiFolder /> },
-        { label: "AI Assistant", icon: <FaRobot /> },
+        { label: "AI Assistant", icon: <FaRobot />, path: "/dashboard/admin/assistant" },
         { label: "Settings", icon: <FiSettings /> },
         { label: "Expense Categories", icon: <FiPieChart /> },
         { label: "Anomaly Detection", icon: <FiActivity /> },

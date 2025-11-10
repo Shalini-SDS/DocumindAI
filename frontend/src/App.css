@@ -40,3 +40,13 @@
 .read-the-docs {
   color: #888;
 }
+
+/* App layout additions for new pages */
+.app-root { display:flex; min-height:100vh; background:#04060a; color:#eaf6ff; }
+.app-sidenav { width:220px; background:#071025; padding:20px; box-sizing:border-box; border-right:1px solid rgba(255,255,255,0.03); }
+.app-sidenav .brand { font-weight:700; margin-bottom:18px; color:#bdefff; }
+.app-sidenav nav ul { list-style:none; padding:0; margin:0; }
+.app-sidenav nav li { margin:8px 0; }
+.app-sidenav a { color:#9fcfe8; text-decoration:none; }
+.app-main { flex:1; }
+

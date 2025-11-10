@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import AdminDashboard from "./pages/AdminDashboard";
 import AuditorDashboard from "./pages/AuditorDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import LoginPage from "./pages/LoginPage";
@@ -8,12 +7,18 @@ import Upload from "./pages/employee/Upload";
 import Expenses from "./pages/employee/Expenses";
 import Assistant from "./pages/employee/Assistant";
 import Settings from "./pages/employee/Settings";
+import AdminDashboardWrapper from "./pages/admin/AdminDashboardWrapper";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminAssistant from "./pages/admin/AdminAssistant";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
-      <Route path="/dashboard/admin" element={<AdminDashboard />} />
+      <Route path="/dashboard/admin" element={<AdminDashboardWrapper />}>
+        <Route index element={<AdminOverview />} />
+        <Route path="assistant" element={<AdminAssistant />} />
+      </Route>
       <Route path="/dashboard/auditor" element={<AuditorDashboard />} />
       <Route path="/dashboard/employee" element={<EmployeeDashboard />}>
         <Route index element={<Overview />} />

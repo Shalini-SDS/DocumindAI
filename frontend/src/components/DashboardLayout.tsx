@@ -1,8 +1,9 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { FiLogOut, FiSettings } from 'react-icons/fi'
 import { BsMoonStars } from 'react-icons/bs'
 import { FaRegUserCircle } from 'react-icons/fa'
+import './DashboardLayout.css'
 
 export type SidebarItem = {
   label: string

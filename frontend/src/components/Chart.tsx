@@ -74,7 +74,7 @@ export const Chart: React.FC<ChartProps> = ({
             paddingAngle={5}
             dataKey={dataKey}
           >
-            {data.map((entry, index) => (
+            {data.map((_entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
                 fill={COLORS[index % COLORS.length]}

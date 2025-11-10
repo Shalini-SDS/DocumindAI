@@ -1,0 +1,180 @@
+.dashboard-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #05060a; /* page background */
+  color: #e8f7ff;
+}
+
+/* Sidebar styling to match screenshot */
+.dashboard-sidebar {
+  width: 220px;
+  background: #060713;
+  border-right: 1px solid rgba(255,255,255,0.04);
+  padding: 22px 18px;
+  box-sizing: border-box;
+}
+
+.sidebar-logo h2 { margin: 0; color: #bfeeff; font-size: 16px; }
+.sidebar-logo p { margin: 0; color: #87cde6; font-size: 12px }
+
+.sidebar-nav { margin-top: 18px }
+.sidebar-link {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  color: #9fcfe8;
+  border-radius: 8px;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.sidebar-link.active,
+.sidebar-link:hover {
+  background: linear-gradient(90deg,#00b4ff12,#06b6ef20);
+  color: #dff6ff;
+}
+
+.sidebar-logout { margin-top: 24px; color: #ff7b7b; background: transparent; border: none }
+
+/* Body area */
+.dashboard-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dashboard-header {
+  padding: 14px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background: transparent;
+}
+
+.dashboard-content {
+  padding: 20px 28px;
+  box-sizing: border-box;
+  flex: 1;
+}
+
+/* Force the inner page content to a two-column layout like the screenshots */
+.dashboard-content > div {
+  display: flex;
+  gap: 22px;
+  align-items: stretch;
+}
+
+/* Left: AI Assistant panel */
+.dashboard-content > div > div:first-child {
+  flex: 2;
+  min-height: 72vh;
+  background: #071025;
+  border-radius: 12px;
+  padding: 18px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255,255,255,0.02);
+  display:flex;
+  flex-direction:column;
+}
+
+/* Chat header bar */
+.dashboard-content > div > div:first-child .mb-6:first-child {
+  background: linear-gradient(90deg,#dff6ff, #e8faff12);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+/* The big white chat area inside should look like a white card with rounded corners */
+.dashboard-content > div > div:first-child .bg-gray-800 {
+  background: #ffffff;
+  color: #0b2733;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.08);
+  flex: 1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Message bubble */
+.dashboard-content > div > div:first-child .bg-gray-800 .text-white {
+  color: #0f2b3b; /* make the message text dark */
+}
+
+/* Input bar at bottom */
+.dashboard-content > div > div:first-child .w-full.bg-gray-700:last-child,
+.dashboard-content > div > div:first-child .w-full.bg-gray-700:last-child input {
+  background:#e9eef6; /* light input field */
+  color:#0b2733;
+}
+
+/* Right: sidebar cards */
+.dashboard-content > div > div:nth-child(2) {
+  width: 340px;
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+}
+
+.dashboard-content > div > div:nth-child(2) .bg-gray-800,
+.dashboard-content > div > div:nth-child(2) .bg-gray-700 {
+  background: #ffffff;
+  color: #0b2733;
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid rgba(13,67,92,0.06);
+}
+
+/* Suggested questions items */
+.dashboard-content > div > div:nth-child(2) .space-y-2 button,
+.dashboard-content > div > div:nth-child(2) .space-y-2 .w-full {
+  background: #f8fbff;
+  border: 1px solid #e6f0fb;
+  color: #0b2733;
+  padding: 10px;
+  border-radius: 8px;
+  text-align:left;
+}
+
+/* Settings large white panel styling (right side in other layout) */
+.dashboard-content > div > div:nth-child(2) .rounded-lg.p-6.h-full {
+  background: #ffffff;
+  color: #0b2733;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+/* Inputs inside settings card */
+.dashboard-content input[type="text"],
+.dashboard-content input[type="email"],
+.dashboard-content input[type="password"],
+.dashboard-content select {
+  background: #e9eef6 !important;
+  border: 1px solid #d6e6f6 !important;
+  color: #08323a !important;
+  padding: 10px !important;
+  border-radius: 8px !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Save button accent */
+.dashboard-content .bg-blue-600 {
+  background: linear-gradient(90deg,#07a6ff,#00d4ff) !important;
+  color: #041f25 !important;
+}
+
+/* Make sure everything is readable on dark background */
+.dashboard-shell a { color: inherit }
+
+@media (max-width: 1000px) {
+  .dashboard-content > div { flex-direction: column }
+  .dashboard-content > div > div:nth-child(2) { width: 100%; }
+}

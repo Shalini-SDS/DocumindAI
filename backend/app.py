@@ -6,6 +6,7 @@ from typing import Dict, List
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 from transformers import pipeline
 
 from utils.ocr import extract_text_from_image
@@ -14,11 +15,39 @@ from utils.classifier import load_categories, classify_text
 app = Flask(__name__)
 CORS(app)
 
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///expenses.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
 UPLOAD_FOLDER = 'uploads'
 FINAL_CATEGORY_LIST = load_categories()
 RECENT_UPLOAD_LIMIT = 25
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Database model
+class Expense(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255))
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    category = db.Column(db.String(100))
+    vendor = db.Column(db.String(255))
+    amount = db.Column(db.Float)
+    text_preview = db.Column(db.Text)
+    status = db.Column(db.String(50), default='Processed')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'file': self.filename,
+            'uploadedAt': self.uploaded_at.isoformat() + 'Z',
+            'category': self.category,
+            'vendor': self.vendor,
+            'total': self.amount,
+            'textPreview': self.text_preview,
+            'status': self.status
+        }
 
 try:
     ner_pipeline = pipeline("ner", aggregation_strategy="simple")
@@ -33,7 +62,6 @@ except Exception as sentiment_error:
     print("Sentiment pipeline unavailable:", sentiment_error)
 
 recent_uploads = deque(maxlen=RECENT_UPLOAD_LIMIT)
-all_expenses = []
 
 
 def extract_amount(text: str) -> float:
@@ -87,18 +115,20 @@ def ocr():
         category = classify_text(text)
         entities = extract_entities(text)
 
-        entry = {
-            'file': file.filename,
-            'uploadedAt': datetime.utcnow().isoformat() + 'Z',
-            'status': 'Processed' if text else 'Needs Review',
-            'category': category,
-            'confidence': 0.0,
-            'textPreview': text[:200],
-            'vendor': entities['vendor'],
-            'total': entities['total']
-        }
+        # Save to database
+        expense = Expense(
+            filename=file.filename,
+            category=category,
+            vendor=entities['vendor'],
+            amount=entities['total'],
+            text_preview=text[:200],
+            status='Processed' if text else 'Needs Review'
+        )
+        db.session.add(expense)
+        db.session.commit()
+
+        entry = expense.to_dict()
         recent_uploads.appendleft(entry)
-        all_expenses.append(entry)
         os.remove(filepath)
 
         return jsonify({
@@ -190,29 +220,31 @@ def health():
 
 @app.route('/expenses', methods=['GET'])
 def get_expenses():
+    expenses = Expense.query.all()
     return jsonify({
         'success': True,
-        'expenses': all_expenses,
-        'count': len(all_expenses)
+        'expenses': [e.to_dict() for e in expenses],
+        'count': len(expenses)
     })
 
 
 @app.route('/expenses/by-category', methods=['GET'])
 def get_expenses_by_category():
+    expenses = Expense.query.all()
     category_data = {}
-    
-    for expense in all_expenses:
-        category = expense.get('category', 'Uncategorized')
+
+    for expense in expenses:
+        category = expense.category or 'Uncategorized'
         if category not in category_data:
             category_data[category] = {
                 'total': 0,
                 'count': 0,
                 'expenses': []
             }
-        category_data[category]['total'] += expense.get('total', 0)
+        category_data[category]['total'] += expense.amount or 0
         category_data[category]['count'] += 1
-        category_data[category]['expenses'].append(expense)
-    
+        category_data[category]['expenses'].append(expense.to_dict())
+
     return jsonify({
         'success': True,
         'by_category': category_data
@@ -221,27 +253,30 @@ def get_expenses_by_category():
 
 @app.route('/expenses/stats', methods=['GET'])
 def get_expenses_stats():
-    total_amount = sum(e.get('total', 0) for e in all_expenses)
+    expenses = Expense.query.all()
+    total_amount = sum(e.amount or 0 for e in expenses)
     category_totals = {}
-    
-    for expense in all_expenses:
-        category = expense.get('category', 'Uncategorized')
-        category_totals[category] = category_totals.get(category, 0) + expense.get('total', 0)
-    
+
+    for expense in expenses:
+        category = expense.category or 'Uncategorized'
+        category_totals[category] = category_totals.get(category, 0) + (expense.amount or 0)
+
     category_percentages = {}
     for cat, amount in category_totals.items():
         category_percentages[cat] = round((amount / total_amount * 100) if total_amount > 0 else 0, 2)
-    
+
     stats = {
         'success': True,
-        'total_expenses': len(all_expenses),
+        'total_expenses': len(expenses),
         'total_amount': round(total_amount, 2),
         'by_category': category_totals,
         'category_percentages': category_percentages
     }
-    
+
     return jsonify(stats)
 
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(host="127.0.0.1", port=5000, debug=True)

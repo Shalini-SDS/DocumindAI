@@ -95,7 +95,7 @@ def extract_entities(text: str) -> Dict:
 
 @app.route('/')
 def home():
-    return jsonify({'status': 'success', 'message': '✅ Transparency-AI OCR backend is running successfully!'})
+    return jsonify({'status': 'success', 'message': '✅ The Transparency-AI OCR backend is running successfully!'})
 
 
 @app.route('/ocr', methods=['POST'])

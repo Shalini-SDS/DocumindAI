@@ -286,8 +286,6 @@ def get_expenses():
     })
 
 
-<<<<<<< HEAD
-=======
 @app.route("/expenses/stats", methods=["GET"])
 def get_expenses_stats():
     try:
@@ -399,7 +397,6 @@ def get_monthly_trends():
         return jsonify({"error": f"Failed to get monthly trends: {str(e)}"}), 500
 
 
->>>>>>> 79a1029e3a83d671b97056f73718c668d2f7af39
 # ------------------------
 # Settings (GET & PUT)
 # ------------------------
@@ -571,6 +568,9 @@ def migrate_database():
 # ------------------------
 # Run Backend
 # ------------------------
+# ------------------------
+# Run Backend
+# ------------------------
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
@@ -580,4 +580,3 @@ if __name__ == "__main__":
             pass
 
     app.run(host="127.0.0.1", port=5000, debug=True)
-

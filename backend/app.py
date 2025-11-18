@@ -286,6 +286,120 @@ def get_expenses():
     })
 
 
+<<<<<<< HEAD
+=======
+@app.route("/expenses/stats", methods=["GET"])
+def get_expenses_stats():
+    try:
+        expenses = Expense.query.all()
+
+        # Calculate total stats
+        total_expenses = len(expenses)
+        total_amount = sum(expense.amount for expense in expenses)
+
+        # Calculate by category
+        by_category = {}
+        for expense in expenses:
+            category = expense.category
+            if category not in by_category:
+                by_category[category] = 0
+            by_category[category] += expense.amount
+
+        # Calculate category percentages
+        category_percentages = {}
+        if total_amount > 0:
+            for category, amount in by_category.items():
+                percentage = round((amount / total_amount) * 100, 1)
+                # Ensure minimum 1% visibility for all categories
+                if percentage <= 0:
+                    percentage = 1.0
+                category_percentages[category] = percentage
+
+        return jsonify({
+            "success": True,
+            "total_expenses": total_expenses,
+            "total_amount": total_amount,
+            "by_category": by_category,
+            "category_percentages": category_percentages
+        })
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to get expense stats: {str(e)}"}), 500
+
+
+@app.route("/expenses/by-category", methods=["GET"])
+def get_expenses_by_category():
+    try:
+        expenses = Expense.query.all()
+
+        # Group expenses by category
+        categories = {}
+        for expense in expenses:
+            category = expense.category
+            if category not in categories:
+                categories[category] = {
+                    "total": 0,
+                    "count": 0,
+                    "expenses": []
+                }
+
+            categories[category]["total"] += expense.amount
+            categories[category]["count"] += 1
+            categories[category]["expenses"].append(expense.to_dict())
+
+        return jsonify({
+            "success": True,
+            "by_category": categories
+        })
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to get expenses by category: {str(e)}"}), 500
+
+
+@app.route("/expenses/trends", methods=["GET"])
+def get_monthly_trends():
+    try:
+        from collections import defaultdict
+        from datetime import datetime
+
+        expenses = Expense.query.all()
+
+        # Group expenses by month and category
+        monthly_data = defaultdict(lambda: defaultdict(float))
+
+        for expense in expenses:
+            # Extract month-year from uploaded_at
+            month_year = expense.uploaded_at.strftime("%Y-%m") if expense.uploaded_at else "2024-11"
+            monthly_data[month_year][expense.category] += expense.amount
+
+        # Convert to list format for frontend
+        trends_data = []
+        for month_year, categories in sorted(monthly_data.items()):
+            month_name = datetime.strptime(month_year, "%Y-%m").strftime("%b")
+            data_point = {"month": month_name}
+
+            # Add all categories for this month
+            for category, amount in categories.items():
+                data_point[category] = amount
+
+            trends_data.append(data_point)
+
+        # If no data, provide some default structure
+        if not trends_data:
+            trends_data = [
+                {"month": "Nov", "Entertainment": 0, "Pharmacy": 0, "Telecommunications": 0}
+            ]
+
+        return jsonify({
+            "success": True,
+            "trends": trends_data
+        })
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to get monthly trends: {str(e)}"}), 500
+
+
+>>>>>>> 79a1029e3a83d671b97056f73718c668d2f7af39
 # ------------------------
 # Settings (GET & PUT)
 # ------------------------

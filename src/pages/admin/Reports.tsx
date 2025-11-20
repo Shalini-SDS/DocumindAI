@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { ReportsProps, AIInsight } from "./reportsMockData";
-import { mockReportsProps } from "./reportsMockData";
 import { formatCurrency, formatPercentage, formatCompactCurrency } from "./reportsUtils";
 
 interface MetricCardProps {
@@ -85,7 +85,82 @@ function AIInsightCard({ insight }: AIInsightCardProps) {
 }
 
 export default function Reports() {
-  const data: ReportsProps = mockReportsProps;
+  const [data, setData] = useState<ReportsProps | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/categories");
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setCategories(["All Categories", ...result.categories]);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchReportsData = async () => {
+      try {
+        setLoading(true);
+        const url = new URL("http://localhost:5000/api/admin/reports");
+        if (selectedCategory !== "All Categories") {
+          url.searchParams.append("category", selectedCategory);
+        }
+        const response = await fetch(url.toString());
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.success) {
+          setData({
+            totalExpenses: result.totalExpenses,
+            complianceRate: result.complianceRate,
+            averagePerTransaction: result.averagePerTransaction,
+            flaggedItems: result.flaggedItems,
+            expenseTrendData: result.expenseTrendData,
+            categorySpendingData: result.categorySpendingData,
+            aiInsights: result.aiInsights
+          });
+        } else {
+          throw new Error(result.error || "Failed to fetch reports");
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to fetch reports data";
+        setError(errorMessage);
+        console.error("Error fetching reports:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReportsData();
+  }, [selectedCategory]);
+
+  if (loading) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <p style={{ color: "var(--text-secondary)" }}>Loading reports...</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <p style={{ color: "var(--logout-color)" }}>Error: {error || "No data available"}</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -147,7 +222,26 @@ export default function Reports() {
         <div className="section-card">
           <div className="section-header">
             <h3>Category-Wise Spending</h3>
-            <span className="badge blue">All Categories</span>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              style={{
+                padding: "6px 12px",
+                borderRadius: "6px",
+                border: "1px solid rgba(71,102,190,0.45)",
+                background: "#0c1736",
+                color: "var(--text-primary)",
+                fontSize: "13px",
+                fontWeight: 500,
+                cursor: "pointer"
+              }}
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
           <div style={{ width: "100%", height: 280 }}>
             <ResponsiveContainer>

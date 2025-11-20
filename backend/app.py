@@ -1103,6 +1103,131 @@ def update_settings(role):
 
 
 # ------------------------
+# AI Insights
+# ------------------------
+@app.route("/api/admin/ai-insights", methods=["GET"])
+def get_ai_insights():
+    try:
+        expenses = Expense.query.all()
+        anomalies = AnomalyDetection.query.all()
+        
+        if not expenses:
+            return jsonify({
+                "success": True,
+                "insights": []
+            })
+        
+        insights = []
+        
+        amounts = [e.amount for e in expenses if e.amount > 0]
+        vendors = {}
+        categories = {}
+        
+        for expense in expenses:
+            if expense.vendor:
+                vendors[expense.vendor.lower()] = vendors.get(expense.vendor.lower(), 0) + 1
+            if expense.category:
+                categories[expense.category] = categories.get(expense.category, 0) + expense.amount
+        
+        total_amount = sum(amounts)
+        avg_amount = total_amount / len(amounts) if amounts else 0
+        
+        if len(amounts) > 1:
+            recent_amounts = sorted(amounts)[-5:]
+            older_amounts = sorted(amounts)[:-5] if len(amounts) > 5 else amounts
+            recent_avg = sum(recent_amounts) / len(recent_amounts)
+            older_avg = sum(older_amounts) / len(older_amounts) if older_amounts else avg_amount
+            
+            if older_avg > 0:
+                growth_rate = ((recent_avg - older_avg) / older_avg) * 100
+                
+                if growth_rate > 20:
+                    insights.append({
+                        "type": "anomaly",
+                        "title": "Spending Increase Detected",
+                        "description": f"Recent expenses average ${recent_avg:.2f} vs older expenses ${older_avg:.2f}. Your spending has increased by {growth_rate:.1f}% recently.",
+                        "details": f"Recent average: ${recent_avg:.2f} | Previous average: ${older_avg:.2f}"
+                    })
+                elif growth_rate < -20:
+                    insights.append({
+                        "type": "recommendation",
+                        "title": "Excellent Cost Control",
+                        "description": f"You've successfully reduced spending by {abs(growth_rate):.1f}%. Keep maintaining this discipline with your expense management.",
+                        "details": f"Recent average: ${recent_avg:.2f} | Previous average: ${older_avg:.2f}"
+                    })
+        
+        if vendors:
+            top_vendors = sorted(vendors.items(), key=lambda x: x[1], reverse=True)[:3]
+            top_vendor_name = top_vendors[0][0].title() if top_vendors else "Unknown"
+            top_vendor_count = top_vendors[0][1] if top_vendors else 0
+            
+            if top_vendor_count > 1:
+                insights.append({
+                    "type": "recommendation",
+                    "title": "Top Vendor Opportunity",
+                    "description": f"You've made {top_vendor_count} transactions with {top_vendor_name}. Consider negotiating bulk discounts or loyalty programs to reduce costs.",
+                    "details": f"Vendor: {top_vendor_name} | Transactions: {top_vendor_count}"
+                })
+        
+        documentation_complete = sum(1 for e in expenses if e.vendor and e.category and e.amount > 0)
+        documentation_rate = (documentation_complete / len(expenses) * 100) if expenses else 0
+        
+        if documentation_rate >= 90:
+            insights.append({
+                "type": "recommendation",
+                "title": "Excellent Documentation Quality",
+                "description": f"Your documentation completeness is at {documentation_rate:.1f}%. All receipts are properly recorded with vendor, category, and amount information.",
+                "details": f"Complete: {documentation_complete}/{len(expenses)} receipts"
+            })
+        elif documentation_rate < 70:
+            insights.append({
+                "type": "anomaly",
+                "title": "Documentation Gap Detected",
+                "description": f"Only {documentation_rate:.1f}% of receipts are complete. Please ensure all receipts include vendor name, category, and amount for better tracking.",
+                "details": f"Complete: {documentation_complete}/{len(expenses)} receipts"
+            })
+        
+        if categories:
+            largest_category = max(categories.items(), key=lambda x: x[1])
+            category_name = largest_category[0]
+            category_amount = largest_category[1]
+            category_percentage = (category_amount / total_amount * 100) if total_amount > 0 else 0
+            
+            if category_percentage > 40:
+                insights.append({
+                    "type": "recommendation",
+                    "title": f"Largest Expense Category: {category_name}",
+                    "description": f"{category_name} represents {category_percentage:.1f}% of your total spending (${category_amount:.2f}). Consider reviewing expenses in this category for optimization opportunities.",
+                    "details": f"Category: {category_name} | Amount: ${category_amount:.2f}"
+                })
+        
+        anomaly_count = len(anomalies)
+        if anomaly_count > 0:
+            high_severity = sum(1 for a in anomalies if a.severity in ["Critical", "High"])
+            insights.append({
+                "type": "anomaly",
+                "title": f"{anomaly_count} Anomalies Detected",
+                "description": f"Your system has detected {anomaly_count} potential anomalies in your expenses, with {high_severity} flagged as high severity. Review these carefully.",
+                "details": f"High severity: {high_severity} | Total: {anomaly_count}"
+            })
+        else:
+            insights.append({
+                "type": "recommendation",
+                "title": "Clean Expense Record",
+                "description": "No anomalies detected in your expenses. Your spending patterns appear normal and consistent.",
+                "details": f"Total transactions analyzed: {len(expenses)}"
+            })
+        
+        return jsonify({
+            "success": True,
+            "insights": insights
+        })
+    
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate insights: {str(e)}"}), 500
+
+
+# ------------------------
 # Logo Upload
 # ------------------------
 @app.route("/settings/<role>/upload-logo", methods=["POST"])

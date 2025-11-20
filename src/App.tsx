@@ -6,15 +6,17 @@ import Upload from "./pages/employee/Upload";
 import Expenses from "./pages/employee/Expenses";
 import Assistant from "./pages/employee/Assistant";
 import Settings from "./pages/employee/Settings";
+import Reports from "./pages/employee/Reports";
+import AnomalyDetection from "./pages/employee/AnomalyDetection";
 import AdminDashboardWrapper from "./pages/admin/AdminDashboardWrapper";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminAssistant from "./pages/admin/AdminAssistant";
 import AdminUpload from "./pages/admin/AdminUpload";
 import AdminSettings from "./pages/admin/AdminSettings";
 import ExpenseCategories from "./pages/admin/ExpenseCategories";
-import AnomalyDetection from "./pages/admin/AnomalyDetection";
+import AdminAnomalyDetection from "./pages/admin/AnomalyDetection";
 import UserManagement from "./pages/admin/UserManagement";
-import Reports from "./pages/admin/Reports";
+import AdminReports from "./pages/admin/Reports";
 import AIInsights from "./pages/admin/AIInsights";
 import AuditorDashboardWrapper from "./pages/auditor/AuditorDashboardWrapper";
 import AuditorOverview from "./pages/auditor/AuditorOverview";
@@ -30,9 +32,9 @@ export default function App() {
         <Route path="assistant" element={<AdminAssistant />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="categories" element={<ExpenseCategories />} />
-        <Route path="anomaly-detection" element={<AnomalyDetection />} />
+        <Route path="anomaly-detection" element={<AdminAnomalyDetection />} />
         <Route path="user-management" element={<UserManagement />} />
-        <Route path="reports" element={<Reports />} />
+        <Route path="reports" element={<AdminReports />} />
         <Route path="ai-insights" element={<AIInsights />} />
       </Route>
       <Route path="/dashboard/auditor" element={<AuditorDashboardWrapper />}>
@@ -44,6 +46,8 @@ export default function App() {
         <Route path="upload" element={<Upload />} />
         <Route path="expenses" element={<Expenses />} />
         <Route path="assistant" element={<Assistant />} />
+        <Route path="reports" element={<Reports />} />
+        <Route path="anomaly-detection" element={<AnomalyDetection />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

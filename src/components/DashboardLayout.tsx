@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiBell, FiMoon, FiSettings, FiSun } from "react-icons/fi";
 import { useTheme } from "../context/ThemeContext";
 
@@ -32,7 +32,14 @@ export default function DashboardLayout({
   userRole
 }: DashboardLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userName");
+    navigate("/");
+  };
 
   return (
     <div className="dashboard-layout">
@@ -92,7 +99,7 @@ export default function DashboardLayout({
               </div>
             ))}
           </div>
-          <button className="logout-button">
+          <button className="logout-button" onClick={handleLogout}>
             <span role="img" aria-label="logout">
               ⏏️
             </span>

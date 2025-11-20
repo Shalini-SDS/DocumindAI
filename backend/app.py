@@ -199,11 +199,11 @@ def extract_amount(text: str) -> float:
 
     # Strategy 1: Look for lines with "TOTAL" and extract the amount
     total_patterns = [
-        r'TOTAL[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)',
-        r'AMOUNT DUE[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)',
-        r'GRAND TOTAL[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)',
-        r'FINAL TOTAL[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)',
-        r'BALANCE DUE[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)'
+        r'TOTAL[:\s]\$?(\d+(?:,\d{3})(?:\.\d{2})?)',
+        r'AMOUNT DUE[:\s]\$?(\d+(?:,\d{3})(?:\.\d{2})?)',
+        r'GRAND TOTAL[:\s]\$?(\d+(?:,\d{3})(?:\.\d{2})?)',
+        r'FINAL TOTAL[:\s]\$?(\d+(?:,\d{3})(?:\.\d{2})?)',
+        r'BALANCE DUE[:\s]\$?(\d+(?:,\d{3})(?:\.\d{2})?)'
     ]
 
     for pattern in total_patterns:
@@ -715,6 +715,245 @@ def get_recent_anomalies():
         })
     except Exception as e:
         return jsonify({"error": f"Failed to get recent anomalies: {str(e)}"}), 500
+
+
+# ------------------------
+# Admin Reports API
+# ------------------------
+@app.route("/api/categories", methods=["GET"])
+def get_categories():
+    try:
+        expenses = Expense.query.all()
+        categories = sorted(set(e.category for e in expenses if e.category))
+        return jsonify({
+            "success": True,
+            "categories": categories
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to get categories: {str(e)}"}), 500
+
+
+@app.route("/api/admin/reports", methods=["GET"])
+def get_admin_reports():
+    try:
+        category_filter = request.args.get("category", None)
+        expenses = Expense.query.all()
+        
+        if category_filter and category_filter != "All Categories":
+            expenses = [e for e in expenses if e.category == category_filter]
+        
+        anomalies = AnomalyDetection.query.all()
+        
+        total_expenses = len(expenses)
+        total_amount = sum(e.amount for e in expenses) if expenses else 0
+        
+        by_category = {}
+        for expense in expenses:
+            category = expense.category
+            if category not in by_category:
+                by_category[category] = 0
+            by_category[category] += expense.amount
+        
+        category_spending_data = [
+            {"category": cat, "amount": amt} 
+            for cat, amt in by_category.items()
+        ]
+        
+        from collections import defaultdict
+        monthly_data = defaultdict(lambda: defaultdict(float))
+        
+        for expense in expenses:
+            month_year = expense.uploaded_at.strftime("%Y-%m") if expense.uploaded_at else "2024-11"
+            monthly_data[month_year][expense.category] += expense.amount
+        
+        expense_trend_data = []
+        for month_year in sorted(monthly_data.keys()):
+            month_name = datetime.strptime(month_year, "%Y-%m").strftime("%b")
+            amount = sum(monthly_data[month_year].values())
+            expense_trend_data.append({"month": month_name, "amount": amount})
+        
+        average_per_transaction = (total_amount / total_expenses) if total_expenses > 0 else 0
+        
+        anomalous_expense_ids = set(a.expense_id for a in anomalies)
+        flagged_items = len(anomalous_expense_ids)
+        
+        compliance_rate = ((total_expenses - flagged_items) / total_expenses * 100) if total_expenses > 0 else 100
+        compliance_rate = round(min(100, max(0, compliance_rate)), 1)
+        
+        ai_insights = [
+            {
+                "id": "insight-1",
+                "type": "Spending Insight",
+                "severity": "Info",
+                "message": f"Total expenses tracked: {len(expenses)} receipts with ${total_amount:.2f} spending."
+            }
+        ]
+        
+        if flagged_items > 0:
+            ai_insights.append({
+                "id": "insight-2",
+                "type": "Anomaly Alert",
+                "severity": "Alert",
+                "message": f"Detected {flagged_items} flagged transaction(s) across all categories. Manual review recommended."
+            })
+        
+        if compliance_rate >= 95:
+            ai_insights.append({
+                "id": "insight-3",
+                "type": "Compliance Status",
+                "severity": "Success",
+                "message": f"Compliance rate is {compliance_rate}%. {int(compliance_rate)}% of submitted expenses meet standards."
+            })
+        
+        if category_spending_data:
+            top_category = max(category_spending_data, key=lambda x: x["amount"])
+            ai_insights.append({
+                "id": "insight-4",
+                "type": "Recommendation",
+                "severity": "Warning",
+                "message": f"'{top_category['category']}' is your highest spending category at ${top_category['amount']:.2f}. Consider optimizing these expenses."
+            })
+        
+        return jsonify({
+            "success": True,
+            "totalExpenses": total_amount,
+            "complianceRate": compliance_rate,
+            "averagePerTransaction": round(average_per_transaction, 2),
+            "flaggedItems": flagged_items,
+            "expenseTrendData": expense_trend_data,
+            "categorySpendingData": category_spending_data,
+            "aiInsights": ai_insights
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to get reports: {str(e)}"}), 500
+
+
+@app.route("/api/admin/users", methods=["GET"])
+def get_admin_users():
+    try:
+        users = UserSettings.query.filter_by(role="employee").all()
+        
+        total_users = len(users)
+        admin_users = len(UserSettings.query.filter_by(role="admin").all())
+        auditor_users = len(UserSettings.query.filter_by(role="auditor").all())
+        
+        user_list = [
+            {
+                "id": str(u.user_id or u.id),
+                "name": u.display_name or "Unknown",
+                "email": u.email or "no-email@example.com",
+                "department": u.industry or "General",
+                "role": "User",
+                "status": "Active",
+                "joinedDate": u.created_at.isoformat() if u.created_at else "2024-01-01T00:00:00"
+            }
+            for u in users
+        ]
+        
+        role_permissions = {
+            "admin": [
+                "View all expenses organization-wide",
+                "Approve/reject flagged transactions",
+                "Access audit logs",
+                "Generate and export reports",
+                "Configure system settings"
+            ],
+            "user": [
+                "Submit expense receipts",
+                "View personal expense history",
+                "Track approval status",
+                "Edit personal profile"
+            ],
+            "auditor": [
+                "Read-only access to all data",
+                "View all dashboards and reports",
+                "Generate compliance reports",
+                "Verify transaction legitimacy"
+            ]
+        }
+        
+        return jsonify({
+            "success": True,
+            "adminUsersCount": admin_users,
+            "staffEmployeesCount": total_users,
+            "auditorsCount": auditor_users,
+            "users": user_list,
+            "rolePermissions": role_permissions
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to get users: {str(e)}"}), 500
+
+
+@app.route("/api/admin/users", methods=["POST"])
+def create_new_user():
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get("name") or not data.get("email"):
+            return jsonify({"error": "Name and email are required"}), 400
+        
+        existing_user = UserSettings.query.filter_by(email=data.get("email")).first()
+        if existing_user:
+            return jsonify({"error": "User with this email already exists"}), 400
+        
+        new_user = UserSettings(
+            role="employee",
+            user_id=str(uuid4()),
+            display_name=data.get("name"),
+            email=data.get("email"),
+            organization_name=data.get("organization", ""),
+            industry=data.get("department", "General")
+        )
+        
+        db.session.add(new_user)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "User created successfully",
+            "user": {
+                "id": str(new_user.user_id),
+                "name": new_user.display_name,
+                "email": new_user.email,
+                "department": new_user.industry,
+                "role": "User",
+                "status": "Active",
+                "joinedDate": new_user.created_at.isoformat() if new_user.created_at else "2024-01-01T00:00:00"
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Failed to create user: {str(e)}"}), 500
+
+
+@app.route("/api/admin/users/roles-permissions", methods=["GET"])
+def get_role_permissions():
+    role_permissions = {
+        "admin": [
+            "View all expenses organization-wide",
+            "Approve/reject flagged transactions",
+            "Access audit logs",
+            "Generate and export reports",
+            "Configure system settings"
+        ],
+        "user": [
+            "Submit expense receipts",
+            "View personal expense history",
+            "Track approval status",
+            "Edit personal profile"
+        ],
+        "auditor": [
+            "Read-only access to all data",
+            "View all dashboards and reports",
+            "Generate compliance reports",
+            "Verify transaction legitimacy"
+        ]
+    }
+    
+    return jsonify({
+        "success": True,
+        "rolePermissions": role_permissions
+    })
 
 
 # ------------------------

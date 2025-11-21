@@ -21,6 +21,8 @@ import AIInsights from "./pages/admin/AIInsights";
 import AuditorDashboardWrapper from "./pages/auditor/AuditorDashboardWrapper";
 import AuditorOverview from "./pages/auditor/AuditorOverview";
 import AllExpenses from "./pages/auditor/AllExpenses";
+import AuditorAnomalyDetection from "./pages/auditor/AnomalyDetection";
+import AuditorAuditTrail from "./pages/auditor/AuditTrail";
 
 export default function App() {
   return (
@@ -40,6 +42,8 @@ export default function App() {
       <Route path="/dashboard/auditor" element={<AuditorDashboardWrapper />}>
         <Route index element={<AuditorOverview />} />
         <Route path="all-expenses" element={<AllExpenses />} />
+        <Route path="anomaly-detection" element={<AuditorAnomalyDetection />} />
+        <Route path="audit-trail" element={<AuditorAuditTrail />} />
       </Route>
       <Route path="/dashboard/employee" element={<EmployeeDashboard />}>
         <Route index element={<Overview />} />

@@ -19,9 +19,9 @@ export default function AuditorDashboardWrapper(): ReactElement {
       sidebarLinks={[
         { label: "Dashboard Overview", icon: <FiGrid />, path: "/dashboard/auditor" },
         { label: "All Expenses", icon: <FiArchive />, path: "/dashboard/auditor/all-expenses" },
-        { label: "Anomaly Review", icon: <FiActivity /> },
+        { label: "Anomaly Review", icon: <FiActivity />, path: "/dashboard/auditor/anomaly-detection" },
         { label: "Reports", icon: <FiBarChart2 /> },
-        { label: "Audit Trail", icon: <FiLayers /> },
+        { label: "Audit Trail", icon: <FiLayers />, path: "/dashboard/auditor/audit-trail" },
         { label: "AI Insights", icon: <FiBookOpen /> },
         { label: "Settings", icon: <FiShield /> }
       ]}

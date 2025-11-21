@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { FiHome, FiSearch, FiSettings, FiBarChart } from 'react-icons/fi';
-import { AlertTriangle, Clock, CheckCircle, Target } from 'lucide-react';
-import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AlertTriangle, Clock, CheckCircle, Target, TrendingUp, AlertCircle } from 'lucide-react';
+import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import type { SidebarItem } from '../components/DashboardLayout';
 
 const auditorSidebarItems: SidebarItem[] = [
@@ -104,6 +104,34 @@ export const AuditorDashboard: React.FC = () => {
     { month: 'Oct', count: 8 },
   ];
 
+  const EXPENSE_TREND_DATA = [
+    { month: 'Jan', flagged: 8000, total: 35000 },
+    { month: 'Feb', flagged: 5000, total: 31000 },
+    { month: 'Mar', flagged: 7500, total: 32000 },
+    { month: 'Apr', flagged: 9000, total: 38000 },
+    { month: 'May', flagged: 6500, total: 35000 },
+    { month: 'Jun', flagged: 8500, total: 37000 },
+    { month: 'Jul', flagged: 7000, total: 36000 },
+    { month: 'Aug', flagged: 6200, total: 35500 },
+    { month: 'Sep', flagged: 8700, total: 37500 },
+    { month: 'Oct', flagged: 9200, total: 38000 },
+  ];
+
+  const CATEGORY_WISE_DATA = [
+    { category: 'Travel', value: 15000 },
+    { category: 'Food', value: 8000 },
+    { category: 'Office', value: 12000 },
+    { category: 'IT', value: 9500 },
+    { category: 'Misc', value: 6500 },
+  ];
+
+  const FRAUD_DETECTION_DATA = [
+    { category: 'Duplicate', count: 12 },
+    { category: 'Unusual', count: 8 },
+    { category: 'Unauthorized', count: 15 },
+    { category: 'Pattern', count: 5 },
+  ];
+
   const flaggedTransactions = anomalies.slice(0, 6).map((anomaly: any) => ({
     date: anomaly.dateTime?.split('T')[0] || 'N/A',
     user: 'User ' + ((anomaly.expenseId || 1) % 10 + 1),
@@ -141,15 +169,169 @@ export const AuditorDashboard: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-white mb-1">Anomaly Detection</h1>
-            <p className="text-gray-400 text-sm">AI-powered fraud and suspicious transaction monitoring</p>
+            <h1 className="text-2xl font-semibold text-white mb-1">AI Expense Transparency</h1>
+            <p className="text-gray-400 text-sm">Comprehensive analysis of spending patterns and anomalies</p>
           </div>
           <button className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors">
-            <span>All Severities</span>
+            <span>Last 6 Months</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
+        </div>
+
+        {/* Reports Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Reports Overview</h2>
+          
+          {/* Expense Trend Over Time */}
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Expense Trend Over Time</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={EXPENSE_TREND_DATA}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="month" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1f2937',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#fff',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="flagged"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  dot={{ fill: '#ef4444', r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Flagged Amount"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ fill: '#3b82f6', r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Total Expenses"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Category-Wise and Fraud Detection Charts */}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            {/* Category-Wise Spending */}
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Category-Wise Spending</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={CATEGORY_WISE_DATA}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis type="number" stroke="#9ca3af" />
+                  <YAxis dataKey="category" type="category" stroke="#9ca3af" width={100} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#fff',
+                    }}
+                  />
+                  <Bar dataKey="value" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Fraud Detection Statistics */}
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Fraud Detection Statistics</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={FRAUD_DETECTION_DATA}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="category" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#fff',
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#ff6b6b" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Reports Metrics Cards */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-gray-400">Total Analyzed</h4>
+              </div>
+              <div className="text-3xl font-bold text-white mb-1">172</div>
+              <div className="text-xs text-gray-500">Transactions</div>
+            </div>
+
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-gray-400">No Issues Detected</h4>
+              </div>
+              <div className="text-3xl font-bold text-green-400 mb-1">97.7%</div>
+              <div className="text-xs text-gray-500">Clean Records</div>
+            </div>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-gray-400">Flagged Amount</h4>
+              </div>
+              <div className="text-3xl font-bold text-yellow-400 mb-1">$11.2K</div>
+              <div className="text-xs text-gray-500">Under review</div>
+            </div>
+
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-gray-400">Avg Resolution</h4>
+              </div>
+              <div className="text-3xl font-bold text-red-400 mb-1">2.3</div>
+              <div className="text-xs text-gray-500">Days</div>
+            </div>
+          </div>
+
+          {/* AI-Generated Insights */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-white">AI-Generated Insights</h3>
+            
+            {/* Spending Pattern */}
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <TrendingUp className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-white mb-1">Spending Pattern</h4>
+                  <p className="text-sm text-gray-300">Travel expenses have increased by 23% compared to last quarter. This aligns with the Q4 conference season. If spending remains consistent with budget allocations.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Anomaly Alert */}
+            <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-white mb-1">Anomaly Alert</h4>
+                  <p className="text-sm text-gray-300">2 duplicate transactions detected in October. Our AI flagged these for manual review. Average resolution time for similar issues is 1.8 days.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}

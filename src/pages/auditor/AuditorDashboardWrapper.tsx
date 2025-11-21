@@ -22,7 +22,7 @@ export default function AuditorDashboardWrapper(): ReactElement {
         { label: "Anomaly Review", icon: <FiActivity />, path: "/dashboard/auditor/anomaly-detection" },
         { label: "Reports", icon: <FiBarChart2 /> },
         { label: "Audit Trail", icon: <FiLayers />, path: "/dashboard/auditor/audit-trail" },
-        { label: "AI Insights", icon: <FiBookOpen /> },
+        { label: "AI Insights", icon: <FiBookOpen />, path: "/dashboard/auditor/ai-insights" },
         { label: "Settings", icon: <FiShield /> }
       ]}
       footerLinks={[{ label: "Trends", icon: <FiTrendingUp /> }]}

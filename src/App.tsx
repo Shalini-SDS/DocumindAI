@@ -23,6 +23,8 @@ import AuditorOverview from "./pages/auditor/AuditorOverview";
 import AllExpenses from "./pages/auditor/AllExpenses";
 import AuditorAnomalyDetection from "./pages/auditor/AnomalyDetection";
 import AuditorAuditTrail from "./pages/auditor/AuditTrail";
+import AuditorAIInsights from "./pages/auditor/AIInsights";
+import AuditorReports from "./pages/auditor/Reports";
 
 export default function App() {
   return (
@@ -44,6 +46,7 @@ export default function App() {
         <Route path="all-expenses" element={<AllExpenses />} />
         <Route path="anomaly-detection" element={<AuditorAnomalyDetection />} />
         <Route path="audit-trail" element={<AuditorAuditTrail />} />
+        <Route path="ai-insights" element={<AuditorAIInsights />} />
       </Route>
       <Route path="/dashboard/employee" element={<EmployeeDashboard />}>
         <Route index element={<Overview />} />

@@ -4,6 +4,8 @@ import './App.css'
 import AIAssistantPage from './pages/AIAssistantPage'
 import SettingsPage from './pages/SettingsPage'
 import { AuditorDashboard } from './pages/AuditorDashboard'
+import { AnomalyReview } from './pages/employee/AnomalyReview'
+import { ExpenseReports } from './pages/employee/ExpenseReports'
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
               <li><Link to="/auditor/anomaly-review">Auditor - Anomaly Review</Link></li>
               <li><Link to="/auditor/ai">Auditor - AI Assistant</Link></li>
               <li><Link to="/auditor/settings">Auditor - Settings</Link></li>
+              <li><Link to="/employee/anomaly-review">Employee - Anomaly Review</Link></li>
+              <li><Link to="/employee/reports">Employee - Reports</Link></li>
               <li><Link to="/employee/ai">Employee - AI Assistant</Link></li>
               <li><Link to="/employee/settings">Employee - Settings</Link></li>
             </ul>
@@ -30,6 +34,8 @@ function App() {
             <Route path="/admin/ai" element={<AIAssistantPage role="Admin" />} />
             <Route path="/auditor/anomaly-review" element={<AuditorDashboard />} />
             <Route path="/auditor/ai" element={<AIAssistantPage role="Auditor" />} />
+            <Route path="/employee/anomaly-review" element={<AnomalyReview />} />
+            <Route path="/employee/reports" element={<ExpenseReports />} />
             <Route path="/employee/ai" element={<AIAssistantPage role="Employee" />} />
 
             <Route path="/admin/settings" element={<SettingsPage role="Admin" />} />

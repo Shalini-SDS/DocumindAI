@@ -9,6 +9,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from transformers import pipeline
 
 from utils.ocr import extract_text_from_image
@@ -187,6 +188,30 @@ class ActivityLog(db.Model):
             "details": self.details,
             "expenseId": self.expense_id,
             "ipAddress": self.ip_address
+        }
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    username = db.Column(db.String(255), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50), nullable=False, default="employee")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "username": self.username,
+            "role": self.role,
+            "createdAt": self.created_at.isoformat() + "Z" if self.created_at else None
         }
 
 
@@ -505,6 +530,86 @@ def ocr():
         if os.path.exists(filepath):
             os.remove(filepath)
         return jsonify({"error": str(error)}), 500
+
+
+# ----------------
+# Authentication Routes
+# ----------------
+
+@app.route("/api/auth/signup", methods=["POST"])
+def signup():
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+        
+        email = data.get("email", "").strip()
+        username = data.get("username", "").strip()
+        password = data.get("password", "").strip()
+        role = data.get("role", "employee").lower()
+        
+        if not email or not username or not password:
+            return jsonify({"success": False, "error": "Email, username, and password are required"}), 400
+        
+        if len(password) < 6:
+            return jsonify({"success": False, "error": "Password must be at least 6 characters"}), 400
+        
+        existing_user_email = User.query.filter_by(email=email).first()
+        if existing_user_email:
+            return jsonify({"success": False, "error": "Email already registered"}), 400
+        
+        existing_user_username = User.query.filter_by(username=username).first()
+        if existing_user_username:
+            return jsonify({"success": False, "error": "Username already taken"}), 400
+        
+        if role not in ["admin", "employee", "auditor"]:
+            role = "employee"
+        
+        user = User(email=email, username=username, role=role)
+        user.set_password(password)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Account created successfully",
+            "user": user.to_dict()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def login():
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"success": False, "error": "No data provided"}), 400
+        
+        email = data.get("email", "").strip()
+        password = data.get("password", "").strip()
+        
+        if not email or not password:
+            return jsonify({"success": False, "error": "Email and password are required"}), 400
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if not user or not user.check_password(password):
+            return jsonify({"success": False, "error": "Invalid email or password"}), 401
+        
+        return jsonify({
+            "success": True,
+            "message": "Login successful",
+            "user": user.to_dict()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route("/analyze", methods=["POST"])
@@ -1271,6 +1376,160 @@ def get_ai_insights():
     
     except Exception as e:
         return jsonify({"error": f"Failed to generate insights: {str(e)}"}), 500
+
+
+@app.route("/api/auditor/ai-insights", methods=["GET"])
+def get_auditor_ai_insights():
+    try:
+        expenses = Expense.query.all()
+        anomalies = AnomalyDetection.query.all()
+        
+        if not expenses:
+            return jsonify({
+                "success": True,
+                "insights": [],
+                "summary": {
+                    "totalExpenses": 0,
+                    "totalAmount": 0,
+                    "flaggedCount": 0,
+                    "cleanCount": 0
+                }
+            })
+        
+        insights = []
+        
+        amounts = [e.amount for e in expenses if e.amount > 0]
+        vendors = {}
+        categories = {}
+        dates = {}
+        
+        for expense in expenses:
+            if expense.vendor:
+                vendors[expense.vendor.lower()] = vendors.get(expense.vendor.lower(), 0) + 1
+            if expense.category:
+                categories[expense.category] = categories.get(expense.category, 0) + expense.amount
+            if expense.uploaded_at:
+                date_str = expense.uploaded_at.strftime("%Y-%m-%d")
+                dates[date_str] = dates.get(date_str, 0) + 1
+        
+        total_amount = sum(amounts)
+        avg_amount = total_amount / len(amounts) if amounts else 0
+        max_amount = max(amounts) if amounts else 0
+        min_amount = min(amounts) if amounts else 0
+        
+        flagged_count = len(set(a.expense_id for a in anomalies))
+        clean_count = len(expenses) - flagged_count
+        
+        insights.append({
+            "type": "summary",
+            "title": "Audit Summary Overview",
+            "description": f"Total expenses reviewed: {len(expenses)}. Flagged for review: {flagged_count}. Clean transactions: {clean_count}.",
+            "details": f"Total Amount: ${total_amount:.2f} | Average: ${avg_amount:.2f} | Range: ${min_amount:.2f} - ${max_amount:.2f}",
+            "badge": "primary"
+        })
+        
+        if anomalies:
+            severity_breakdown = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0}
+            anomaly_types_count = {}
+            
+            for anomaly in anomalies:
+                severity_breakdown[anomaly.severity] = severity_breakdown.get(anomaly.severity, 0) + 1
+                atype = anomaly.anomaly_type
+                anomaly_types_count[atype] = anomaly_types_count.get(atype, 0) + 1
+            
+            high_critical_count = severity_breakdown["Critical"] + severity_breakdown["High"]
+            
+            insights.append({
+                "type": "alert",
+                "title": f"Critical Anomalies Detected: {severity_breakdown['Critical']}",
+                "description": f"Critical: {severity_breakdown['Critical']} | High: {severity_breakdown['High']} | Medium: {severity_breakdown['Medium']} | Low: {severity_breakdown['Low']}. Immediate review required for critical items.",
+                "details": f"Total flagged anomalies: {len(anomalies)}",
+                "badge": "danger"
+            })
+            
+            if anomaly_types_count:
+                top_anomaly_type = max(anomaly_types_count.items(), key=lambda x: x[1])
+                insights.append({
+                    "type": "warning",
+                    "title": f"Most Common Anomaly: {top_anomaly_type[0]}",
+                    "description": f"The most frequently detected anomaly type is '{top_anomaly_type[0]}' occurring {top_anomaly_type[1]} times. Consider implementing preventive measures.",
+                    "details": f"Anomaly breakdown: {', '.join([f'{k}: {v}' for k, v in sorted(anomaly_types_count.items(), key=lambda x: x[1], reverse=True)])}",
+                    "badge": "warning"
+                })
+        
+        if vendors:
+            top_vendors = sorted(vendors.items(), key=lambda x: x[1], reverse=True)[:5]
+            top_vendor_name = top_vendors[0][0].title()
+            top_vendor_count = top_vendors[0][1]
+            
+            insights.append({
+                "type": "info",
+                "title": f"Top Vendors: {top_vendor_name}",
+                "description": f"Most active vendor is '{top_vendor_name}' with {top_vendor_count} transactions. Top 5 vendors account for concentrated spending.",
+                "details": f"Top vendors: {', '.join([f'{v[0].title()} ({v[1]})' for v in top_vendors])}",
+                "badge": "info"
+            })
+        
+        if categories:
+            category_list = [(k, v, v/total_amount*100) for k, v in categories.items()]
+            category_list.sort(key=lambda x: x[1], reverse=True)
+            
+            high_risk_categories = [c for c in category_list if c[2] > 30]
+            if high_risk_categories:
+                insights.append({
+                    "type": "recommendation",
+                    "title": f"High Concentration in {high_risk_categories[0][0]}",
+                    "description": f"Category '{high_risk_categories[0][0]}' represents {high_risk_categories[0][2]:.1f}% of total spending (${high_risk_categories[0][1]:.2f}). Review for cost optimization.",
+                    "details": f"Category breakdown: {', '.join([f'{c[0]} ({c[2]:.1f}%)' for c in category_list[:5]])}",
+                    "badge": "secondary"
+                })
+        
+        compliance_rate = (clean_count / len(expenses) * 100) if expenses else 0
+        
+        if compliance_rate >= 95:
+            insights.append({
+                "type": "success",
+                "title": "Excellent Compliance Score",
+                "description": f"Compliance rate of {compliance_rate:.1f}%. Only {flagged_count} transactions flagged out of {len(expenses)}. Organization demonstrates strong expense governance.",
+                "details": f"Clean: {clean_count}/{len(expenses)} transactions",
+                "badge": "success"
+            })
+        elif compliance_rate < 80:
+            insights.append({
+                "type": "alert",
+                "title": "Low Compliance Rate",
+                "description": f"Only {compliance_rate:.1f}% of transactions passed initial audit. {flagged_count} transactions require investigation.",
+                "details": f"Flagged: {flagged_count}/{len(expenses)} transactions",
+                "badge": "danger"
+            })
+        
+        recent_expenses = sorted(expenses, key=lambda e: e.uploaded_at, reverse=True)[:10]
+        if recent_expenses:
+            recent_anomaly_count = sum(1 for e in recent_expenses for a in anomalies if a.expense_id == e.id)
+            if recent_anomaly_count > 0:
+                insights.append({
+                    "type": "warning",
+                    "title": "Recent Anomalies in Last 10 Submissions",
+                    "description": f"{recent_anomaly_count} anomalies detected in the most recent 10 expense submissions. Pattern may indicate training or process gaps.",
+                    "details": f"Recent flagged: {recent_anomaly_count}/10 latest transactions",
+                    "badge": "warning"
+                })
+        
+        return jsonify({
+            "success": True,
+            "insights": insights,
+            "summary": {
+                "totalExpenses": len(expenses),
+                "totalAmount": round(total_amount, 2),
+                "flaggedCount": flagged_count,
+                "cleanCount": clean_count,
+                "complianceRate": round(compliance_rate, 1),
+                "averageAmount": round(avg_amount, 2)
+            }
+        })
+    
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate auditor insights: {str(e)}"}), 500
 
 
 # ------------------------

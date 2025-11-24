@@ -38,7 +38,24 @@
   color: #dff6ff;
 }
 
-.sidebar-logout { margin-top: 24px; color: #ff7b7b; background: transparent; border: none }
+.logout-header-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #ff5555/20;
+  border: 1px solid #ff5555/30;
+  color: #ff7b7b;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.logout-header-button:hover {
+  background: #ff5555/30;
+  color: #ff9999;
+}
 
 /* Body area */
 .dashboard-body {

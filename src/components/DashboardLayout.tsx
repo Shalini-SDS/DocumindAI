@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiBell, FiMoon, FiSettings, FiSun } from "react-icons/fi";
+import { FiBell, FiMoon, FiSettings, FiSun, FiLogOut } from "react-icons/fi";
 import { useTheme } from "../context/ThemeContext";
 
 type SidebarLink = {
@@ -34,12 +34,25 @@ export default function DashboardLayout({
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     sessionStorage.removeItem("userRole");
     sessionStorage.removeItem("userName");
     navigate("/");
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="dashboard-layout">
@@ -99,12 +112,6 @@ export default function DashboardLayout({
               </div>
             ))}
           </div>
-          <button className="logout-button" onClick={handleLogout}>
-            <span role="img" aria-label="logout">
-              ⏏️
-            </span>
-            Logout
-          </button>
         </div>
       </aside>
       <main className="dashboard-main">
@@ -120,12 +127,102 @@ export default function DashboardLayout({
             <div className="icon-button">
               <FiBell />
             </div>
-            <div className="icon-button">
-              <FiSettings />
-            </div>
-            <div className="user-chip">
-              <span>{userRole}</span>
-              <strong>{userName}</strong>
+            <div ref={profileMenuRef} style={{ position: "relative", display: "flex", alignItems: "center", gap: "12px" }}>
+              <button 
+                className="icon-button" 
+                type="button"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                style={{
+                  cursor: "pointer",
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #3ba8ff 0%, #2e8ecc 100%)",
+                  border: "2px solid var(--border-soft)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  padding: 0
+                }}
+              >
+                {userName.charAt(0).toUpperCase()}
+              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <strong style={{ fontSize: "14px", color: "var(--text-primary)" }}>{userName}</strong>
+                <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{userRole}</span>
+              </div>
+              {showProfileMenu && (
+                <div style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  marginTop: "8px",
+                  background: "var(--surface-card)",
+                  border: "1px solid var(--border-soft)",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+                  minWidth: "200px",
+                  zIndex: 1000
+                }}>
+                  <div style={{ padding: "8px 0" }}>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      borderBottom: "1px solid var(--border-soft)"
+                    }}>
+                      My Account
+                    </div>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
+                      Profile Settings
+                    </div>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
+                      Preferences
+                    </div>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "#ff6b6b",
+                      fontSize: "14px",
+                      borderTop: "1px solid var(--border-soft)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    onClick={handleLogout}
+                    >
+                      <FiLogOut size={16} />
+                      Logout
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

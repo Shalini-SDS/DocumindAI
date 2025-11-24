@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FiLogOut, FiSettings } from 'react-icons/fi'
 import { BsMoonStars } from 'react-icons/bs'
 import { FaRegUserCircle } from 'react-icons/fa'
@@ -20,6 +20,13 @@ type DashboardLayoutProps = {
 }
 
 export function DashboardLayout({ role, user, sidebarItems, children, onSidebarClick }: DashboardLayoutProps) {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    navigate('/')
+  }
+
   return (
     <div className="dashboard-shell">
       <aside className="dashboard-sidebar">
@@ -43,10 +50,6 @@ export function DashboardLayout({ role, user, sidebarItems, children, onSidebarC
             </button>
           ))}
         </nav>
-        <button className="sidebar-logout" type="button">
-          <FiLogOut />
-          Logout
-        </button>
       </aside>
       <div className="dashboard-body">
         <header className="dashboard-header">
@@ -68,6 +71,10 @@ export function DashboardLayout({ role, user, sidebarItems, children, onSidebarC
                 <span>{role}</span>
               </div>
             </div>
+            <button className="logout-header-button" type="button" onClick={handleLogout}>
+              <FiLogOut />
+              Logout
+            </button>
             <Link className="accent-button" to="/">
               Upload Receipt
             </Link>

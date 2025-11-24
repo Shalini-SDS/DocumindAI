@@ -1,7 +1,7 @@
 import { ReactNode, useMemo, useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/DashboardLayout";
-import { FiActivity, FiBarChart2, FiFileText, FiFolder, FiGrid, FiSettings, FiUploadCloud } from "react-icons/fi";
+import { FiActivity, FiBarChart2, FiFileText, FiFolder, FiGrid, FiLogOut, FiSettings, FiUploadCloud } from "react-icons/fi";
 
 type PageConfig = {
   key: string;
@@ -65,10 +65,17 @@ const pages: PageConfig[] = [
 
 export default function EmployeeDashboard() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [userName, setUserName] = useState("Employee User");
   const [loading, setLoading] = useState(true);
 
   const API_URL = "http://127.0.0.1:5000";
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userName");
+    navigate("/");
+  };
 
   useEffect(() => {
     fetchUserSettings();
@@ -100,8 +107,11 @@ export default function EmployeeDashboard() {
     return (
       <DashboardLayout
         appName="AI Expense Transparency"
-        sidebarLinks={pages.map(({ label, icon, path }) => ({ label, icon, path }))}
-        footerLinks={[{ label: "Reports", icon: <FiFileText /> }]}
+        sidebarLinks={[
+          ...pages.map(({ label, icon, path }) => ({ label, icon, path })),
+          { label: "Logout", icon: <FiLogOut />, onClick: handleLogout }
+        ]}
+        footerLinks={[]}
         title="Loading..."
         subtitle="Please wait"
         userName="Employee User"
@@ -117,7 +127,10 @@ export default function EmployeeDashboard() {
   return (
     <DashboardLayout
       appName="AI Expense Transparency"
-      sidebarLinks={pages.map(({ label, icon, path }) => ({ label, icon, path }))}
+      sidebarLinks={[
+        ...pages.map(({ label, icon, path }) => ({ label, icon, path })),
+        { label: "Logout", icon: <FiLogOut />, onClick: handleLogout }
+      ]}
       footerLinks={[]}
       title={activePage.title}
       subtitle={activePage.subtitle}

@@ -1,4 +1,5 @@
 import DashboardLayout from "../components/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 import {
   FiActivity,
   FiArchive,
@@ -6,8 +7,7 @@ import {
   FiFileText,
   FiGrid,
   FiLayers,
-  FiShield,
-  FiTrendingUp
+  FiLogOut
 } from "react-icons/fi";
 import {
   Bar,
@@ -64,6 +64,14 @@ const flagBadges: Record<string, string> = {
 };
 
 export default function AuditorDashboard() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userName");
+    navigate("/");
+  };
+
   return (
     <DashboardLayout
       appName="AI Expense Transparency"
@@ -73,9 +81,9 @@ export default function AuditorDashboard() {
         { label: "Anomaly Review", icon: <FiActivity /> },
         { label: "Reports", icon: <FiBarChart2 /> },
         { label: "Audit Trail", icon: <FiLayers /> },
-        { label: "Settings", icon: <FiShield /> }
+        { label: "Logout", icon: <FiLogOut />, onClick: handleLogout }
       ]}
-      footerLinks={[{ label: "Trends", icon: <FiTrendingUp /> }]}
+      footerLinks={[]}
       title="Auditor Dashboard"
       subtitle="Review and monitor expense activities"
       userName="Admin User"

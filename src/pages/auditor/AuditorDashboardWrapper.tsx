@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/DashboardLayout";
 import type { ReactElement } from "react";
 import {
@@ -8,26 +8,33 @@ import {
   FiBookOpen,
   FiGrid,
   FiLayers,
-  FiShield,
-  FiTrendingUp
+  FiLogOut
 } from "react-icons/fi";
 
 export default function AuditorDashboardWrapper(): ReactElement {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userName");
+    navigate("/");
+  };
+
   return (
     <DashboardLayout
       appName="AI Expense Transparency"
       sidebarLinks={[
         { label: "Dashboard Overview", icon: <FiGrid />, path: "/dashboard/auditor" },
         { label: "All Expenses", icon: <FiArchive />, path: "/dashboard/auditor/all-expenses" },
-        { label: "Anomaly Review", icon: <FiActivity /> },
-        { label: "Reports", icon: <FiBarChart2 /> },
-        { label: "Audit Trail", icon: <FiLayers /> },
-        { label: "AI Insights", icon: <FiBookOpen /> },
-        { label: "Settings", icon: <FiShield /> }
+        { label: "Anomaly Review", icon: <FiActivity />, path: "/dashboard/auditor/anomaly-detection" },
+        { label: "Reports", icon: <FiBarChart2 />, path: "/dashboard/auditor/reports" },
+        { label: "Audit Trail", icon: <FiLayers />, path: "/dashboard/auditor/audit-trail" },
+        { label: "AI Insights", icon: <FiBookOpen />, path: "/dashboard/auditor/ai-insights" },
+        { label: "Logout", icon: <FiLogOut />, onClick: handleLogout }
       ]}
-      footerLinks={[{ label: "Trends", icon: <FiTrendingUp /> }]}
+      footerLinks={[]}
       title="Auditor Dashboard"
-      subtitle="Review and monitor expense activities"
+      subtitle=""
       userName="Admin User"
       userRole="Auditor"
     >

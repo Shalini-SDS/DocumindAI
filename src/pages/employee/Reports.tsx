@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { ReportsProps, AIInsight } from "./reportsMockData";
-import { formatCurrency, formatPercentage, formatCompactCurrency } from "./reportsUtils";
 
 interface MetricCardProps {
   label: string;
@@ -18,6 +16,13 @@ function MetricCard({ label, value, subtitle, accentClass }: MetricCardProps) {
       <div className="stat-label">{subtitle}</div>
     </div>
   );
+}
+
+interface AIInsight {
+  id: string;
+  type: string;
+  severity: "Info" | "Alert" | "Success" | "Warning";
+  message: string;
 }
 
 interface AIInsightCardProps {
@@ -84,8 +89,18 @@ function AIInsightCard({ insight }: AIInsightCardProps) {
   );
 }
 
+interface ReportsData {
+  totalExpenses: number;
+  complianceRate: number;
+  averagePerTransaction: number;
+  flaggedItems: number;
+  expenseTrendData: Array<{ month: string; amount: number }>;
+  categorySpendingData: Array<{ category: string; amount: number }>;
+  aiInsights: AIInsight[];
+}
+
 export default function Reports() {
-  const [data, setData] = useState<ReportsProps | null>(null);
+  const [data, setData] = useState<ReportsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,6 +138,28 @@ export default function Reports() {
     fetchReportsData();
   }, []);
 
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
+
+  const formatCompactCurrency = (value: number): string => {
+    if (value >= 1000000) {
+      return "$" + (value / 1000000).toFixed(1) + "M";
+    } else if (value >= 1000) {
+      return "$" + (value / 1000).toFixed(1) + "K";
+    }
+    return formatCurrency(value);
+  };
+
+  const formatPercentage = (value: number): string => {
+    return value.toFixed(1) + "%";
+  };
+
   if (loading) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
@@ -142,8 +179,8 @@ export default function Reports() {
   return (
     <>
       <div style={{ marginBottom: "12px" }}>
-        <h2 className="dashboard-title">Expense Reports and Insights</h2>
-        <p className="dashboard-subtitle">Comprehensive analytics for tracking, spending, and anomalies</p>
+        <h2 className="dashboard-title">My Expense Reports and Insights</h2>
+        <p className="dashboard-subtitle">Comprehensive analytics for tracking your spending and anomalies</p>
       </div>
 
       <div className="grid cols-1">
@@ -152,7 +189,6 @@ export default function Reports() {
             <h3>Expense Trend Over Time</h3>
             <div style={{ display: "flex", gap: "12px", fontSize: "13px" }}>
               <span className="badge blue">Last 6 Months</span>
-              <span className="badge blue">All Departments</span>
             </div>
           </div>
           <div style={{ width: "100%", height: 280 }}>
@@ -201,7 +237,7 @@ export default function Reports() {
         <MetricCard
           label="Total Expenses"
           value={formatCompactCurrency(data.totalExpenses)}
-          subtitle="This quarter"
+          subtitle="All time"
         />
         <MetricCard
           label="Compliance Rate"
@@ -221,6 +257,49 @@ export default function Reports() {
           accentClass="accent-yellow"
         />
       </div>
+
+      {data.categorySpendingData.length > 0 && (
+        <div className="grid cols-1">
+          <div className="section-card">
+            <div className="section-header">
+              <h3>Spending by Category</h3>
+            </div>
+            <div style={{ width: "100%", height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={data.categorySpendingData}>
+                  <XAxis
+                    dataKey="category"
+                    stroke="#5870a5"
+                    dy={6}
+                    tickLine={false}
+                    axisLine={false}
+                    style={{ fontSize: "12px" }}
+                  />
+                  <YAxis
+                    stroke="#5870a5"
+                    tickLine={false}
+                    axisLine={false}
+                    style={{ fontSize: "12px" }}
+                    tickFormatter={(value) => formatCompactCurrency(value)}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "rgba(59, 168, 255, 0.1)" }}
+                    contentStyle={{
+                      background: "#0c1736",
+                      borderRadius: 12,
+                      border: "1px solid rgba(71,102,190,0.45)"
+                    }}
+                    labelStyle={{ color: "#99a5cc" }}
+                    itemStyle={{ color: "#e6ecff" }}
+                    formatter={(value: number) => formatCurrency(value)}
+                  />
+                  <Bar dataKey="amount" fill="#3ba8ff" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="section-card">
         <div className="section-header">

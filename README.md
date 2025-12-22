@@ -34,27 +34,25 @@ Validate consistency
 
 Generate audit explanations
 
-🚨 Fraud & Anomaly Detection
+**Fraud & Anomaly Detection**
 Uses Isolation Forest to identify abnormal spending patterns.
-
-📊 Explainable Audit Dashboard
+**Explainable Audit Dashboard**
 Displays flagged transactions with reasoning and confidence scores.
-
-🔍 Duplicate & Semantic Matching
+**Duplicate & Semantic Matching**
 Detects duplicate claims even with vendor name or format variations.
 
 **System Architecture**
 Receipt / Invoice
-        ↓
+        I
 PaddleOCR-VL (Text + Layout Extraction)
-        ↓
+        I
 ERNIE 4.5 Multi-Agent System (CAMEL-AI)
-        ↓
+        I
 Isolation Forest (Anomaly Scoring)
-        ↓
+        I
 Explainable Audit Dashboard
 
-🧠 Multi-Agent Design (ERNIE 4.5)
+**Multi-Agent Design (ERNIE 4.5)**
 Agent	Responsibility
 Document Understanding Agent	Extracts structured fields from OCR output
 Expense Categorization Agent	Classifies expense type with reasoning

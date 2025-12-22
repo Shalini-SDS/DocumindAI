@@ -1,13 +1,10 @@
-📄 DocMind AI
-
-AI-Powered Expense Verification & Fraud Detection Platform
-
-🚀 Overview
+**DocMind AI -AI-Powered Expense Verification & Fraud Detection Platform**
+** Overview**
 
 DocMind AI is an intelligent expense monitoring and auditing system designed for NGOs and small organizations. It automates expense verification using PaddleOCR-VL for document understanding and ERNIE 4.5 for semantic reasoning within a multi-agent architecture.
 The system detects anomalies, prevents duplicate or fraudulent claims, and provides explainable audit insights through an interactive dashboard.
 
-💡 Problem Statement
+**Problem Statement**
 
 Manual expense tracking using paper receipts and spreadsheets leads to:
 
@@ -21,12 +18,12 @@ Reduced trust from donors and stakeholders
 
 DocMind AI addresses these issues through AI-driven automation and explainable intelligence.
 
-✨ Key Features
+** Key Features**
 
-📷 Multimodal OCR with PaddleOCR-VL
+**Multimodal OCR with PaddleOCR**
 Extracts text, layout, and key fields from receipts and invoices.
 
-🧠 ERNIE 4.5 Multi-Agent Reasoning System
+ **ERNIE 4.5 Multi-Agent Reasoning System**
 Specialized agents collaboratively:
 
 Parse financial documents
@@ -46,16 +43,12 @@ Displays flagged transactions with reasoning and confidence scores.
 🔍 Duplicate & Semantic Matching
 Detects duplicate claims even with vendor name or format variations.
 
-🏗 System Architecture
+**System Architecture**
 Receipt / Invoice
         ↓
 PaddleOCR-VL (Text + Layout Extraction)
         ↓
 ERNIE 4.5 Multi-Agent System (CAMEL-AI)
-   ├── Document Understanding Agent
-   ├── Expense Categorization Agent
-   ├── Fraud & Consistency Agent
-   └── Audit Summary Agent
         ↓
 Isolation Forest (Anomaly Scoring)
         ↓
@@ -70,7 +63,7 @@ Audit Summary Agent	Generates human-readable audit explanations
 
 Each agent is powered by ERNIE 4.5 and follows a single-responsibility design for clarity and explainability.
 
-🛠 Tech Stack
+**Tech Stack**
 OCR & Vision
 
 PaddleOCR-VL
@@ -101,7 +94,7 @@ Web Dashboard
 
 Matplotlib / Power BI (optional)
 
-▶ How It Works
+** How It Works**
 
 User uploads a receipt or invoice
 
@@ -113,7 +106,7 @@ Isolation Forest detects anomalies
 
 System outputs an explainable audit decision
 
-🔮 Future Enhancements
+** Future Enhancements**
 
 Fine-tuning PaddleOCR-VL for handwritten and multilingual receipts
 
@@ -127,7 +120,7 @@ Edge and offline deployment for low-connectivity regions
 
 Role-based access control for auditors, admins, and donors
 
-🌍 Use Cases
+**Use Cases**
 
 NGOs and charitable organizations
 
@@ -137,26 +130,7 @@ Grant-funded projects
 
 Educational and healthcare institutions
 
-🏆 Hackathon Alignment
 
-✅ Best PaddleOCR-VL Fine-Tune
-
-✅ Best ERNIE Multimodal Application
-
-✅ Best Agent System (CAMEL-AI)
-
-📎 Links
-
-🔗 GitHub Repository: https://github.com/your-username/docmind-ai
-
-🎥 Demo Video: https://youtube.com/your-demo-link
-
-🌐 Live Demo: https://your-demo-url.com
-
-📜 License
-
-This project is released for educational and hackathon purposes.
-
-💬 One-line Summary for Judges
+ **One-line Summary for Judges**
 
 DocMind AI combines PaddleOCR-VL and ERNIE 4.5 in a multi-agent system to deliver explainable, real-time expense auditing and fraud detection.

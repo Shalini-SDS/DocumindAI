@@ -101,28 +101,6 @@ Web Dashboard
 
 Matplotlib / Power BI (optional)
 
-📂 Project Structure
-docmind-ai/
-│
-├── ocr/
-│   └── paddle_ocr.py
-│
-├── agents/
-│   ├── document_agent.py
-│   ├── categorization_agent.py
-│   ├── fraud_agent.py
-│   └── audit_agent.py
-│
-├── pipeline/
-│   └── audit_pipeline.py
-│
-├── models/
-│   └── anomaly_model.pkl
-│
-├── app.py
-├── requirements.txt
-└── README.md
-
 ▶ How It Works
 
 User uploads a receipt or invoice

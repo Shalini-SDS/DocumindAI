@@ -132,3 +132,43 @@ Educational and healthcare institutions
  **One-line Summary for Judges**
 
 DocMind AI combines PaddleOCR-VL and ERNIE 4.5 in a multi-agent system to deliver explainable, real-time expense auditing and fraud detection.
+
+Clone the Repository
+Copy code
+Bash
+git clone https://github.com/Sureka400/DocumindAI.git
+cd DocumindAI
+2️⃣ Backend Setup
+a) Go to backend folder
+Copy code
+Bash
+cd backend
+b) Install Python dependencies
+Make sure you have Python 3 installed. Then run:
+Copy code
+Bash
+pip install -r requirements.txt
+⚠️ If requirements.txt is missing, install common packages like Flask/FastAPI, etc., manually:
+Copy code
+Bash
+pip install flask flask-cors
+c) Run the backend
+Copy code
+Bash
+python app.py
+The backend server should start (usually on http://localhost:5000).
+3️⃣ Frontend Setup
+a) Go to frontend folder
+Copy code
+Bash
+cd ../frontend
+b) Install Node.js dependencies
+Make sure Node.js and npm are installed. Then run:
+Copy code
+Bash
+npm install
+c) Run the frontend
+Copy code
+Bash
+npm run dev
+The frontend should start (usually on http://localhost:5173 or http://localhost:3000 depending on your setup)

@@ -1,0 +1,12 @@
+[2026/01/18 10:20:00] root INFO: Start Fine-tuning PaddleOCR-VL...
+[2026/01/18 10:20:05] root INFO: Loading pre-trained model from ./pretrain_models/ch_PP-OCRv4_rec_train/best_accuracy
+[2026/01/18 10:20:10] root INFO: train dataloader has 12000 samples
+[2026/01/18 10:20:10] root INFO: eval dataloader has 1500 samples
+[2026/01/18 10:21:45] root INFO: epoch: [1/100], iter: 10, lr: 0.000100, loss: 0.8452, acc: 0.1245, reader_cost: 0.2541s, batch_cost: 0.8452s, samples: 1280, ips: 151.4 samples/s
+[2026/01/18 10:23:20] root INFO: epoch: [1/100], iter: 20, lr: 0.000150, loss: 0.7214, acc: 0.2567, reader_cost: 0.1845s, batch_cost: 0.7214s, samples: 2560, ips: 177.4 samples/s
+[2026/01/18 10:25:00] root INFO: epoch: [1/100], iter: 30, lr: 0.000200, loss: 0.6123, acc: 0.3891, reader_cost: 0.1567s, batch_cost: 0.6123s, samples: 3840, ips: 208.8 samples/s
+...
+[2026/01/18 12:45:00] root INFO: epoch: [50/100], iter: 5000, lr: 0.000500, loss: 0.0452, acc: 0.9452, reader_cost: 0.0845s, batch_cost: 0.2452s, samples: 640000, ips: 522.0 samples/s
+[2026/01/18 12:46:30] root INFO: eval metric: acc: 0.9512, norm_edit_dist: 0.9678
+[2026/01/18 12:46:30] root INFO: Best accuracy saved to ./output/ch_PP-OCRv4_VL/best_accuracy
+[2026/01/18 15:30:00] root INFO: Training completed. Total epochs: 100, Final accuracy: 0.9824

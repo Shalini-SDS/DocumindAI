@@ -1,113 +1,222 @@
-import React, { useState, useEffect } from 'react';
-import { DashboardLayout } from '../components/DashboardLayout';
-import { FiHome, FiSearch } from 'react-icons/fi';
-import { AlertTriangle, TrendingUp, AlertCircle } from 'lucide-react';
-import type { SidebarItem } from '../components/DashboardLayout';
+import DashboardLayout from "../components/DashboardLayout";
+import { useNavigate } from "react-router-dom";
+import {
+  FiActivity,
+  FiArchive,
+  FiBarChart2,
+  FiFileText,
+  FiGrid,
+  FiLayers,
+  FiLogOut
+} from "react-icons/fi";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
-const auditorSidebarItems: SidebarItem[] = [
-  { label: 'Dashboard', icon: <FiHome />, active: false },
-  { label: 'Anomaly Review', icon: <FiSearch />, active: true },
+const complianceData = [
+  { name: "Compliant", value: 91, color: "#38d788" },
+  { name: "Warning", value: 7, color: "#ffa94d" },
+  { name: "Violation", value: 2, color: "#ff6b6b" }
 ];
 
-export const AuditorDashboard: React.FC = () => {
-  const [aiInsights, setAiInsights] = useState<any[]>([]);
+const reviewStats = [
+  { month: "Jul", verified: 58, flagged: 6 },
+  { month: "Aug", verified: 54, flagged: 4 },
+  { month: "Sep", verified: 52, flagged: 5 },
+  { month: "Oct", verified: 57, flagged: 3 }
+];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const insightsRes = await fetch('http://127.0.0.1:5000/api/auditor/ai-insights');
-        const insightsData = await insightsRes.json();
+const transactions = [
+  { date: "2025-11-01", user: "User 1", vendor: "Tech Solutions Inc", amount: "$2,450", category: "IT", status: "Verified", aiFlag: "Clean" },
+  { date: "2025-10-30", user: "User 2", vendor: "Office Depot", amount: "$340", category: "Office", status: "Verified", aiFlag: "Clean" },
+  { date: "2025-10-28", user: "User 3", vendor: "Global Airlines", amount: "$1,800", category: "Travel", status: "Flagged", aiFlag: "Flagged" },
+  { date: "2025-10-25", user: "User 4", vendor: "Restaurant Place", amount: "$450", category: "Food", status: "Pending", aiFlag: "Clean" },
+  { date: "2025-10-22", user: "User 5", vendor: "Cloud Services Ltd", amount: "$1,200", category: "IT", status: "Verified", aiFlag: "Clean" },
+  { date: "2025-10-21", user: "User 6", vendor: "ABC Taxi Service", amount: "$250", category: "Travel", status: "Flagged", aiFlag: "Flagged" },
+  { date: "2025-10-18", user: "User 7", vendor: "Stationery World", amount: "$180", category: "Office", status: "Verified", aiFlag: "Clean" },
+  { date: "2025-10-15", user: "User 8", vendor: "Conference Center", amount: "$5,600", category: "Misc", status: "Pending", aiFlag: "Clean" }
+];
 
-        if (insightsData.success) {
-          setAiInsights(insightsData.insights || []);
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      }
-    };
+const auditTrail = [
+  { title: "John Smith", action: "Approved Reports", detail: "Tech Solutions Inc - $2,450", timestamp: "2025-10-15 14:32 - 192.168.1.100" },
+  { title: "Sarah Johnson", action: "Uploaded Receipt", detail: "Office Depot - $340", timestamp: "2025-10-15 13:48 - 192.168.1.202" },
+  { title: "John Smith", action: "Flagged as Duplicate", detail: "Global Airlines - $1,800", timestamp: "2025-10-14 19:05 - 192.168.1.100" }
+];
 
-    fetchData();
-  }, []);
+const statusBadges: Record<string, string> = {
+  Verified: "badge green",
+  Pending: "badge yellow",
+  Flagged: "badge red"
+};
+
+const flagBadges: Record<string, string> = {
+  Clean: "badge green",
+  Flagged: "badge red"
+};
+
+export default function AuditorDashboard() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userName");
+    navigate("/");
+  };
 
   return (
     <DashboardLayout
-      role="Auditor"
-      user="Jane Smith"
-      sidebarItems={auditorSidebarItems}
+      appName="AI Expense Transparency"
+      sidebarLinks={[
+        { label: "Dashboard Overview", icon: <FiGrid />, path: "/dashboard/auditor" },
+        { label: "All Expenses", icon: <FiArchive /> },
+        { label: "Anomaly Review", icon: <FiActivity /> },
+        { label: "Reports", icon: <FiBarChart2 /> },
+        { label: "Audit Trail", icon: <FiLayers /> },
+        { label: "Logout", icon: <FiLogOut />, onClick: handleLogout }
+      ]}
+      footerLinks={[]}
+      title="Auditor Dashboard"
+      subtitle="Review and monitor expense activities"
+      userName="Admin User"
+      userRole="Auditor"
     >
-      <div className="min-h-screen bg-[#0a0e1a] p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-white mb-1">AI Expense Transparency</h1>
-            <p className="text-gray-400 text-sm">Comprehensive analysis of spending patterns and anomalies</p>
+      <div className="grid cols-4">
+        <div className="stat-card">
+          <div className="stat-label">Total Transactions</div>
+          <div className="stat-value">172</div>
+          <div className="stat-label">This audit period</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Compliance Rate</div>
+          <div className="stat-value">90.7%</div>
+          <div className="stat-label">+2.1% improvement</div>
+        </div>
+        <div className="stat-card accent-green">
+          <div className="stat-label">AI Flags Reviewed</div>
+          <div className="stat-value">16</div>
+          <div className="stat-label">Anomalies verified</div>
+        </div>
+        <div className="stat-card accent-red">
+          <div className="stat-label">Policy Violations</div>
+          <div className="stat-value">4</div>
+          <div className="stat-label">Require attention</div>
+        </div>
+      </div>
+      <div className="grid cols-2">
+        <div className="section-card">
+          <div className="section-header">
+            <h3>Compliance Overview</h3>
+          </div>
+          <div style={{ width: "100%", height: 260 }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={complianceData} dataKey="value" innerRadius={70} outerRadius={100} paddingAngle={4}>
+                  {complianceData.map((item) => (
+                    <Cell key={item.name} fill={item.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: "#0c1736", borderRadius: 12, border: "1px solid rgba(71,102,190,0.45)" }}
+                  labelStyle={{ color: "#99a5cc" }}
+                  itemStyle={{ color: "#e6ecff" }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="grid cols-3">
+            {complianceData.map((item) => (
+              <div key={item.name} className="stat-label">
+                <span className="badge blue" style={{ background: `${item.color}33`, color: item.color }}>
+                  {item.value}%
+                </span>
+                {item.name}
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* AI-Generated Insights */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-white">AI-Generated Insights</h3>
-            
-            {aiInsights.length > 0 ? (
-              aiInsights.map((insight: any, index: number) => {
-                const getBgColor = (type: string) => {
-                  switch(type) {
-                    case 'alert': return 'bg-red-500/10 border-red-500/30';
-                    case 'warning': return 'bg-orange-500/10 border-orange-500/30';
-                    case 'success': return 'bg-green-500/10 border-green-500/30';
-                    case 'info': return 'bg-blue-500/10 border-blue-500/30';
-                    case 'summary': return 'bg-purple-500/10 border-purple-500/30';
-                    case 'recommendation': return 'bg-yellow-500/10 border-yellow-500/30';
-                    default: return 'bg-gray-700/30 border-gray-600/30';
-                  }
-                };
-
-                const getIconColor = (type: string) => {
-                  switch(type) {
-                    case 'alert': return 'text-red-400';
-                    case 'warning': return 'text-orange-400';
-                    case 'success': return 'text-green-400';
-                    case 'info': return 'text-blue-400';
-                    case 'summary': return 'text-purple-400';
-                    case 'recommendation': return 'text-yellow-400';
-                    default: return 'text-gray-400';
-                  }
-                };
-
-                return (
-                  <div key={index} className={`border rounded-lg p-4 ${getBgColor(insight.type)}`}>
-                    <div className="flex items-start gap-3">
-                      {insight.type === 'alert' && <AlertTriangle className={`w-5 h-5 ${getIconColor(insight.type)} mt-0.5 flex-shrink-0`} />}
-                      {insight.type === 'warning' && <AlertCircle className={`w-5 h-5 ${getIconColor(insight.type)} mt-0.5 flex-shrink-0`} />}
-                      {(insight.type === 'success' || insight.type === 'recommendation') && <TrendingUp className={`w-5 h-5 ${getIconColor(insight.type)} mt-0.5 flex-shrink-0`} />}
-                      {insight.type === 'info' && <TrendingUp className={`w-5 h-5 ${getIconColor(insight.type)} mt-0.5 flex-shrink-0`} />}
-                      {insight.type === 'summary' && <TrendingUp className={`w-5 h-5 ${getIconColor(insight.type)} mt-0.5 flex-shrink-0`} />}
-                      <div className="flex-1">
-                        <h4 className="font-medium text-white mb-1">{insight.title}</h4>
-                        <p className="text-sm text-gray-300 mb-2">{insight.description}</p>
-                        {insight.details && <p className="text-xs text-gray-400">{insight.details}</p>}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <>
-                {/* Spending Pattern */}
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <TrendingUp className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-medium text-white mb-1">No Expenses Yet</h4>
-                      <p className="text-sm text-gray-300">Upload receipts to see AI-generated insights about your expenses, anomalies, and compliance status.</p>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+        <div className="section-card">
+          <div className="section-header">
+            <h3>Admin Review Statistics</h3>
           </div>
+          <div style={{ width: "100%", height: 260 }}>
+            <ResponsiveContainer>
+              <BarChart data={reviewStats}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1b2a4d" />
+                <XAxis dataKey="month" stroke="#5870a5" />
+                <YAxis stroke="#5870a5" />
+                <Tooltip
+                  contentStyle={{ background: "#0c1736", borderRadius: 12, border: "1px solid rgba(71,102,190,0.45)" }}
+                  labelStyle={{ color: "#99a5cc" }}
+                  itemStyle={{ color: "#e6ecff" }}
+                />
+                <Bar dataKey="verified" fill="#38d788" radius={[6, 6, 0, 0]} barSize={24} />
+                <Bar dataKey="flagged" fill="#ff6b6b" radius={[6, 6, 0, 0]} barSize={24} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+      <div className="section-card">
+        <div className="section-header">
+          <h3>All Transactions (Read-only Access)</h3>
+        </div>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>User</th>
+              <th>Vendor</th>
+              <th>Amount</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>AI Flag</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((txn) => (
+              <tr key={txn.vendor + txn.date}>
+                <td>{txn.date}</td>
+                <td>{txn.user}</td>
+                <td>{txn.vendor}</td>
+                <td>{txn.amount}</td>
+                <td>
+                  <span className="badge blue">{txn.category}</span>
+                </td>
+                <td>
+                  <span className={statusBadges[txn.status]}>{txn.status}</span>
+                </td>
+                <td>
+                  <span className={flagBadges[txn.aiFlag]}>{txn.aiFlag}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="section-card">
+        <div className="section-header">
+          <h3>Recent Audit Trail Activity</h3>
+        </div>
+        <div className="audit-feed">
+          {auditTrail.map((entry) => (
+            <div key={entry.timestamp} className="audit-item">
+              <strong>{entry.title}</strong>
+              <span>{entry.action}</span>
+              <span>{entry.detail}</span>
+              <span>{entry.timestamp}</span>
+            </div>
+          ))}
         </div>
       </div>
     </DashboardLayout>
   );
-};
+}

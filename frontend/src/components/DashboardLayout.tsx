@@ -1,87 +1,233 @@
-import type { ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { FiLogOut, FiSettings } from 'react-icons/fi'
-import { BsMoonStars } from 'react-icons/bs'
-import { FaRegUserCircle } from 'react-icons/fa'
-import './DashboardLayout.css'
+import { ReactNode, useState, useRef, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FiBell, FiMoon, FiSettings, FiSun, FiLogOut } from "react-icons/fi";
+import { useTheme } from "../context/ThemeContext";
 
-export type SidebarItem = {
-  label: string
-  icon: ReactNode
-  active?: boolean
-}
+type SidebarLink = {
+  label: string;
+  icon: ReactNode;
+  path?: string;
+  onClick?: () => void;
+};
 
 type DashboardLayoutProps = {
-  role: string
-  user: string
-  sidebarItems: SidebarItem[]
-  children: ReactNode
-  onSidebarClick?: (label: string) => void
-}
+  appName: string;
+  sidebarLinks: SidebarLink[];
+  footerLinks?: SidebarLink[];
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+  userName: string;
+  userRole: string;
+};
 
-export function DashboardLayout({ role, user, sidebarItems, children, onSidebarClick }: DashboardLayoutProps) {
-  const navigate = useNavigate()
+export default function DashboardLayout({
+  appName,
+  sidebarLinks,
+  footerLinks = [],
+  title,
+  subtitle,
+  children,
+  userName,
+  userRole
+}: DashboardLayoutProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    navigate('/')
-  }
+    sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userName");
+    navigate("/");
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <div className="dashboard-shell">
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-logo">
-          <div className="logo-badge">O</div>
-          <div>
-            <h2>AI Expense Transparency</h2>
-            <p>Financial Trust Through AI</p>
+    <div className="dashboard-layout">
+      <aside className="sidebar">
+        <div>
+          <div className="sidebar-header">
+            <span role="img" aria-label="shield">
+              🛡️
+            </span>
+            {appName}
+          </div>
+          <nav className="sidebar-nav">
+            {sidebarLinks.map((link) => {
+              const isActive = link.path
+                ? location.pathname === link.path || location.pathname.startsWith(`${link.path}/`)
+                : false;
+              if (link.path) {
+                return (
+                  <Link
+                    key={link.label}
+                    to={link.path}
+                    className={`sidebar-link${isActive ? " active" : ""}`}
+                  >
+                    {link.icon}
+                    {link.label}
+                  </Link>
+                );
+              }
+              if (link.onClick) {
+                return (
+                  <div
+                    key={link.label}
+                    className="sidebar-link"
+                    onClick={link.onClick}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {link.icon}
+                    {link.label}
+                  </div>
+                );
+              }
+              return (
+                <div key={link.label} className="sidebar-link">
+                  {link.icon}
+                  {link.label}
+                </div>
+              );
+            })}
+          </nav>
+        </div>
+        <div className="sidebar-footer">
+          <div className="sidebar-nav">
+            {footerLinks.map((link) => (
+              <div key={link.label} className="sidebar-link">
+                {link.icon}
+                {link.label}
+              </div>
+            ))}
           </div>
         </div>
-        <nav className="sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.label}
-              className={`sidebar-link${item.active ? ' active' : ''}`}
-              type="button"
-              onClick={() => onSidebarClick?.(item.label)}
-            >
-              <span className="sidebar-icon">{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-        </nav>
       </aside>
-      <div className="dashboard-body">
-        <header className="dashboard-header">
+      <main className="dashboard-main">
+        <div className="dashboard-topbar">
           <div>
-            <p className="header-eyebrow">Welcome back</p>
-            <h1>{role}</h1>
+            <div className="dashboard-title">{title}</div>
+            <div className="dashboard-subtitle">{subtitle}</div>
           </div>
-          <div className="header-actions">
-            <button className="icon-button" type="button">
-              <BsMoonStars />
+          <div className="topbar-right">
+            <button className="icon-button" type="button" onClick={toggleTheme}>
+              {theme === "dark" ? <FiSun /> : <FiMoon />}
             </button>
-            <button className="icon-button" type="button">
-              <FiSettings />
-            </button>
-            <div className="header-user">
-              <FaRegUserCircle />
-              <div>
-                <p>{user}</p>
-                <span>{role}</span>
-              </div>
+            <div className="icon-button">
+              <FiBell />
             </div>
-            <button className="logout-header-button" type="button" onClick={handleLogout}>
-              <FiLogOut />
-              Logout
-            </button>
-            <Link className="accent-button" to="/">
-              Upload Receipt
-            </Link>
+            <div ref={profileMenuRef} style={{ position: "relative", display: "flex", alignItems: "center", gap: "12px" }}>
+              <button 
+                className="icon-button" 
+                type="button"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                style={{
+                  cursor: "pointer",
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #3ba8ff 0%, #2e8ecc 100%)",
+                  border: "2px solid var(--border-soft)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  padding: 0
+                }}
+              >
+                {userName.charAt(0).toUpperCase()}
+              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <strong style={{ fontSize: "14px", color: "var(--text-primary)" }}>{userName}</strong>
+                <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{userRole}</span>
+              </div>
+              {showProfileMenu && (
+                <div style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  marginTop: "8px",
+                  background: "var(--surface-card)",
+                  border: "1px solid var(--border-soft)",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+                  minWidth: "200px",
+                  zIndex: 1000
+                }}>
+                  <div style={{ padding: "8px 0" }}>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      borderBottom: "1px solid var(--border-soft)"
+                    }}>
+                      My Account
+                    </div>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
+                      Profile Settings
+                    </div>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "var(--text-primary)",
+                      fontSize: "14px",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
+                      Preferences
+                    </div>
+                    <div style={{
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      color: "#ff6b6b",
+                      fontSize: "14px",
+                      borderTop: "1px solid var(--border-soft)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    onClick={handleLogout}
+                    >
+                      <FiLogOut size={16} />
+                      Logout
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </header>
-        <main className="dashboard-content">{children}</main>
-      </div>
+        </div>
+        {children}
+      </main>
     </div>
-  )
+  );
 }

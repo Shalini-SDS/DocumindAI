@@ -43,7 +43,7 @@ class ExpenseVerificationPipeline:
             "vendor": extracted_data.get("vendor"),
             "amount": extracted_data.get("amount"),
             "items": extracted_data.get("items", []),
-            "description": ocr_text[:200]  # First 200 chars as description
+            "description": ocr_text[:1000]  # First 1000 chars as description
         }
         cat_result = self.cat_agent.process(cat_input)
 

@@ -2,9 +2,9 @@ import sys
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
-sys.path.append(os.path.join(BASE_DIR, "backend"))
-sys.path.append(os.path.join(BASE_DIR, "backend", "pipelines"))
+sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.join(BASE_DIR, "backend"))
+sys.path.insert(0, os.path.join(BASE_DIR, "backend", "pipelines"))
 
 import streamlit as st
 import tempfile

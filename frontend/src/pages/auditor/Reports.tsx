@@ -185,18 +185,18 @@ export default function AuditorReports() {
 
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(28);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text("EXPENSE AUDIT REPORT", pageWidth / 2, 20, { align: "center" });
 
       doc.setFontSize(11);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       doc.text(`Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, pageWidth / 2, 32, { align: "center" });
 
       yPosition = 50;
 
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(14);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text("SUMMARY STATISTICS", 15, yPosition);
       yPosition += 12;
 
@@ -216,11 +216,11 @@ export default function AuditorReports() {
 
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(10);
-        doc.setFont(undefined, "normal");
+        doc.setFont("helvetica", "normal");
         doc.text(metric.label, xPos + 5, yPos + 6);
 
         doc.setFontSize(12);
-        doc.setFont(undefined, "bold");
+        doc.setFont("helvetica", "bold");
         doc.text(metric.value, xPos + 5, yPos + 12);
       });
 
@@ -230,13 +230,13 @@ export default function AuditorReports() {
       doc.rect(15, yPosition - 8, pageWidth - 30, 8, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text("EXPENSE TREND", 15, yPosition - 2);
 
       yPosition += 8;
       doc.setTextColor(200, 200, 220);
       doc.setFontSize(9);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
 
       data.expenseTrendData.forEach((item) => {
         doc.text(`${item.month}: $${item.amount.toFixed(2)}`, 20, yPosition);
@@ -255,13 +255,13 @@ export default function AuditorReports() {
       doc.rect(15, yPosition - 8, pageWidth - 30, 8, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text("CATEGORY-WISE SPENDING", 15, yPosition - 2);
 
       yPosition += 8;
       doc.setTextColor(200, 200, 220);
       doc.setFontSize(9);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
 
       data.categorySpendingData.forEach((item) => {
         const percentage = ((item.amount / data.totalExpenses) * 100).toFixed(1);
@@ -281,7 +281,7 @@ export default function AuditorReports() {
       doc.rect(15, yPosition - 8, pageWidth - 30, 8, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
+      doc.setFont("helvetica", "bold");
       doc.text("AI INSIGHTS & RECOMMENDATIONS", 15, yPosition - 2);
 
       yPosition += 10;
@@ -307,12 +307,12 @@ export default function AuditorReports() {
 
         doc.setTextColor(color[0], color[1], color[2]);
         doc.setFontSize(10);
-        doc.setFont(undefined, "bold");
+        doc.setFont("helvetica", "bold");
         doc.text(`[${insight.severity}] ${insight.type}`, 23, yPosition);
 
         doc.setTextColor(200, 200, 220);
         doc.setFontSize(9);
-        doc.setFont(undefined, "normal");
+        doc.setFont("helvetica", "normal");
         const splitMessage = doc.splitTextToSize(insight.message, pageWidth - 40);
         doc.text(splitMessage, 23, yPosition + 6);
 
@@ -322,7 +322,7 @@ export default function AuditorReports() {
       yPosition = pageHeight - 15;
       doc.setTextColor(100, 120, 165);
       doc.setFontSize(8);
-      doc.setFont(undefined, "normal");
+      doc.setFont("helvetica", "normal");
       doc.text("Transparency-AI Expense Audit System", pageWidth / 2, yPosition, { align: "center" });
       doc.text(`Report ID: ${Math.random().toString(36).substr(2, 9).toUpperCase()}`, pageWidth / 2, yPosition + 5, { align: "center" });
 
@@ -450,7 +450,6 @@ export default function AuditorReports() {
               />
               <Legend
                 wrapperStyle={{ color: "var(--text-secondary)" }}
-                contentStyle={{ background: "transparent" }}
               />
               <Line
                 type="monotone"

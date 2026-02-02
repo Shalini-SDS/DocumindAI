@@ -11,15 +11,28 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from transformers import pipeline
+from dotenv import load_dotenv
 
 from utils.ocr import extract_text_from_image
 from utils.classifier import load_categories, classify_text
 
+# Load environment variables
+load_dotenv()
+
 app = Flask(__name__)
-CORS(app)
+
+# Security & CORS
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
+cors_origin = os.getenv('CORS_ORIGIN', '*')
+CORS(app, resources={r"/*": {"origins": cors_origin}})
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///expenses.db'
+database_url = os.getenv('DATABASE_URL', 'sqlite:///expenses.db')
+# Handle Render/Heroku postgres:// vs postgresql://
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -2160,4 +2173,5 @@ if __name__ == "__main__":
         except:
             pass
 
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
